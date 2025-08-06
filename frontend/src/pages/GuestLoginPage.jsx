@@ -16,7 +16,7 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
-import axios from "axios";
+import axios from '../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import usePropertyStore from "../store/usePropertyStore";

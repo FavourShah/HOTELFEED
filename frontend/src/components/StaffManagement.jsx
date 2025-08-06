@@ -59,7 +59,7 @@ import {
   ChevronRightIcon,
   LockIcon,
 } from "@chakra-ui/icons";
-import axios from "axios";
+import axios from '../utils/axiosInstance';
 import useAuthStore from "../store/useAuthStore";
 import usePropertyStore from "../store/usePropertyStore";
 import { exportToPDF } from "../utils/exportToPDF"; 

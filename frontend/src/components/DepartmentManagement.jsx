@@ -47,8 +47,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@chakra-ui/icons";
-import axios from "axios";
+
 import useAuthStore from "../store/useAuthStore";
+import axios from '../utils/axiosInstance';
 
 // Utility functions
 const formatDate = (dateString) => {

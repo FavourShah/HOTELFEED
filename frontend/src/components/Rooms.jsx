@@ -40,7 +40,7 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon, EditIcon, AddIcon, SearchIcon, WarningIcon } from "@chakra-ui/icons";
 import { FaBed, FaBuilding, FaPlus } from "react-icons/fa";
-import axios from "axios";
+import axios from '../utils/axiosInstance';
 import useAuthStore from "../store/useAuthStore";
 
 const RoomSettingsPage = () => {

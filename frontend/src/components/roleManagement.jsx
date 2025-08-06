@@ -41,7 +41,7 @@ import {
   ButtonGroup,
 } from "@chakra-ui/react";
 import { EditIcon, DeleteIcon, AddIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import axios from "axios";
+import axios from '../utils/axiosInstance';
 import useAuthStore from "../store/useAuthStore";
 
 // Components

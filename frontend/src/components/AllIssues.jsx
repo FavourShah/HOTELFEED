@@ -59,11 +59,13 @@ import {
   ChevronRightIcon
 } from "@chakra-ui/icons";
 import { MdArchive } from "react-icons/md";
-import axios from "axios";
+
 import useAuthStore from "../store/useAuthStore";
 import usePropertyStore from "../store/usePropertyStore"; // Add this import
 import { saveAs } from "file-saver";
 import { exportToPDF } from "../utils/exportToPDF";
+import axios from '../utils/axiosInstance';
+
 
 const AllIssuesPage = () => {
   const { token, user } = useAuthStore();

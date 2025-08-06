@@ -21,7 +21,7 @@ import {
   FaClipboardList,
   FaExclamationCircle
 } from 'react-icons/fa';
-import axios from 'axios';
+import axios from '../utils/axiosInstance';
 import useAuthStore from '../store/useAuthStore';
 
 const StaffIssueForm = ({

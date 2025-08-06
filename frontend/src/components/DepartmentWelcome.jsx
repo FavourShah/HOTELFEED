@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/icons";
 import useAuthStore from "../store/useAuthStore.js";
 
+
 const DepartmentWelcome = () => {
   const { user } = useAuthStore();
   const role = user?.role?.toLowerCase();

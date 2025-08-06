@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+
 import {
   Box,
   Heading,
@@ -35,6 +35,7 @@ import { saveAs } from "file-saver";
 import { exportToPDF } from "../utils/exportToPDF";
 import useAuthStore from "../store/useAuthStore";
 import usePropertyStore from "../store/usePropertyStore"; // Add this import
+import axios from '../utils/axiosInstance';
 
 const DepartmentalIssues = () => {
   const { token, user } = useAuthStore();

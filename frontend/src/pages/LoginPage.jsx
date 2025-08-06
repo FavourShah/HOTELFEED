@@ -19,7 +19,7 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import usePropertyStore from "../store/usePropertyStore";
-import axios from "axios";
+import axios from '../utils/axiosInstance';
 
 const LoginPage = () => {
   const navigate = useNavigate();

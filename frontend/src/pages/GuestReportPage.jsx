@@ -21,7 +21,7 @@ import {
   FaBed,
   FaClipboardList
 } from 'react-icons/fa';
-import axios from 'axios';
+import axios from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import usePropertyStore from '../store/usePropertyStore';

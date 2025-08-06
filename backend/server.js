@@ -25,7 +25,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(cors()); // Allow frontend access
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://hotelfrontend.onrender.com'],
+  credentials: true,
+}));
+app.use(express.json());
+
+
 app.use(express.json()); // Parse incoming JSON
 
 // Serve static files (like uploaded images)
