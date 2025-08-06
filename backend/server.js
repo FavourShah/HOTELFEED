@@ -26,9 +26,20 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 // Middleware
+const allowedOrigins = [
+  "https://fixlodge.onrender.com", 
+  "http://localhost:5173"
+];
+
 app.use(cors({
-  origin: ['https://hotelfrontend.onrender.com', 'http://localhost:5173'],
-  credentials: true,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
 app.use(express.json());
 
