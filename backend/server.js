@@ -27,7 +27,7 @@ const __dirname = path.dirname(__filename);
 // Middleware
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://hotelfrontend.onrender.com'],
+  origin: ['https://hotelfrontend.onrender.com', 'http://localhost:5173'],
   credentials: true,
 }));
 app.use(express.json());
