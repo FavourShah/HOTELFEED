@@ -1,0 +1,10 @@
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+    "fullName": "Favour Ezechi",
+    "email": "favourezechiori@gmail.com",
+    "phone": "810808608",
+    "password": "MynameisntFavour",
+    "role": "hr"
+}
