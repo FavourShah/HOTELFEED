@@ -46,7 +46,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.put(`${API_BASE_URL}/property`, updateData, {
+          const response = await axios.put('/api/property', updateData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -75,7 +75,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.post(`${API_BASE_URL}/property/logo`, formData, {
+          const response = await axios.post('/apiproperty/logo', formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
@@ -104,7 +104,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.delete(`${API_BASE_URL}/property/logo`, {
+          const response = await axios.delete('/api/property/logo', {
             headers: {
               Authorization: `Bearer ${token}`
             }
