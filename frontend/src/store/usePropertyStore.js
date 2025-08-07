@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 import axios from 'axios';
 
 // Use environment variable or fallback to localhost
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const usePropertyStore = create(
   persist(
@@ -18,7 +18,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.get(`${API_BASE_URL}/property`, {
+          const response = await axios.get(`${API_BASE_URL}/api/property`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
