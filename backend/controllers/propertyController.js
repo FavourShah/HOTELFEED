@@ -155,109 +155,19 @@ export const updateProperty = async (req, res) => {
 
 export const uploadLogo = async (req, res) => {
   try {
-    console.log('🏞️ Logo upload started');
-    console.log('🏞️ Request file info:', req.file ? {
-      filename: req.file.filename,
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-      path: req.file.path
-    } : 'No file in request');
-
-    if (!req.file) {
-      console.log('❌ No file uploaded');
-      return res.status(400).json({ message: "No file uploaded" });
+    if (!req.file?.path) {
+      return res.status(400).json({ message: 'No image uploaded' });
     }
 
-    // ✅ CREATE FULL URL LIKE YOUR ISSUES CONTROLLER
-    const logoUrl = `${req.protocol}://${req.get("host")}/uploads/logos/${req.file.filename}`;
-    console.log('🏞️ Generated logo URL (FULL):', logoUrl);
-    
-    // Check if file actually exists on disk
-    const filePath = req.file.path;
-    if (!fs.existsSync(filePath)) {
-      console.log('❌ File was not saved to disk:', filePath);
-      return res.status(500).json({ message: "File upload failed - file not saved" });
-    }
-    
-    console.log('✅ File confirmed on disk:', filePath);
-    console.log('📊 File size on disk:', fs.statSync(filePath).size, 'bytes');
-    
-    // Update property with new logo
-    let property = await Property.findOne();
-    console.log('🏞️ Current property:', property ? {
-      name: property.name,
-      currentLogoUrl: property.logoUrl
-    } : 'No property exists');
-    
-    // Remove old logo file if it exists and is a local file
-    if (property && property.logoUrl && property.logoUrl.includes('/uploads/') && property.logoUrl !== logoUrl) {
-      // Extract filename from the old URL
-      try {
-        const oldUrl = new URL(property.logoUrl);
-        const oldFilename = path.basename(oldUrl.pathname);
-        const oldFilePath = path.join(__dirname, '../uploads/logos/', oldFilename);
-        
-        console.log('🗑️ Trying to delete old file:', oldFilePath);
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath);
-          console.log('✅ Old logo file deleted successfully');
-        }
-      } catch (deleteErr) {
-        console.error('❌ Error deleting old logo file:', deleteErr);
-      }
-    }
-    
-    if (!property) {
-      // If no property exists, create one with empty name
-      console.log('🏞️ Creating new property with logo');
-      property = await Property.create({
-        name: '',
-        logoUrl: logoUrl
-      });
-    } else {
-      console.log('🏞️ Updating existing property with new logo');
-      property.logoUrl = logoUrl;
-      await property.save();
-    }
+    // Save the Cloudinary URL to your property model
+    const property = await Property.findOne(); // or based on user
+    property.logoUrl = req.file.path;
+    await property.save();
 
-    console.log('✅ Logo upload completed successfully:', {
-      filename: req.file.filename,
-      logoUrl: logoUrl,
-      filePath: req.file.path,
-      propertyId: property._id
-    });
-
-    res.json({
-      message: "Logo uploaded successfully",
-      logoUrl: logoUrl,
-      property: property,
-      debug: {
-        filename: req.file.filename,
-        originalname: req.file.originalname,
-        size: req.file.size,
-        path: req.file.path,
-        diskSize: fs.statSync(filePath).size
-      }
-    });
-
-  } catch (err) {
-    console.error('❌ Error uploading logo:', err);
-    
-    // Clean up uploaded file if there was an error
-    if (req.file && fs.existsSync(req.file.path)) {
-      try {
-        fs.unlinkSync(req.file.path);
-        console.log('🧹 Cleaned up uploaded file after error');
-      } catch (cleanupErr) {
-        console.error('❌ Error cleaning up uploaded file:', cleanupErr);
-      }
-    }
-    
-    res.status(500).json({ 
-      message: "Failed to upload logo",
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+    res.status(200).json({ message: 'Logo uploaded', property });
+  } catch (error) {
+    console.error('Logo upload failed:', error);
+    res.status(500).json({ message: 'Upload failed', error });
   }
 };
 

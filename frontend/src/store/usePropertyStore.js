@@ -75,7 +75,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.post('/apiproperty/logo', formData, {
+          const response = await axios.post('/api/property/logo', formData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'

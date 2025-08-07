@@ -84,7 +84,8 @@ const PropertySettings = () => {
   useEffect(() => {
     console.log('🔍 Property data:', property);
     console.log('🔍 Logo URL:', property?.logoUrl);
-    console.log('🔍 Full logo URL would be:', property?.logoUrl ? `${window.location.origin}${property.logoUrl}` : 'No URL');
+  console.log('🔍 Full logo URL would be:', property?.logoUrl || 'No URL');
+
   }, [property]);
 
   // Initialize form data when property loads
@@ -578,7 +579,8 @@ const PropertySettings = () => {
                           <VStack spacing={2} color="red.400">
                             <Text fontSize="sm">❌ Failed to load image</Text>
                             <Code fontSize="xs">{property.logoUrl}</Code>
-                            <Button size="xs" onClick={() => window.open(`${window.location.origin}${property.logoUrl}`, '_blank')}>
+                            <Button size="xs" onClick={() => window.open(property.logoUrl, '_blank')
+}>
                               Test URL
                             </Button>
                           </VStack>
