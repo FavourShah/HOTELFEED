@@ -89,17 +89,25 @@ export const getProperty = async (req, res) => {
   }
 };
 
-export const updateProperty = async (req, res) => {
+export const uploadLogo = async (req, res) => {
   try {
-    const { name, logoUrl } = req.body;
-    console.log('📝 Updating property:', { name, logoUrl });
-    
-    // Validation
-    if (!name || name.trim().length === 0) {
-      return res.status(400).json({ 
-        message: "Property name is required" 
-      });
+    if (!req.file?.filename) {
+      return res.status(400).json({ message: 'No image uploaded' });
     }
+
+    const property = await Property.findOne(); // or based on user
+
+    // ✅ Store relative path for frontend
+    property.logoUrl = `/uploads/logos/${req.file.filename}`;
+    await property.save();
+
+    res.status(200).json({ message: 'Logo uploaded', property });
+  } catch (error) {
+    console.error('Logo upload failed:', error);
+    res.status(500).json({ message: 'Upload failed', error });
+  }
+};
+
 
     if (name.trim().length < 2) {
       return res.status(400).json({ 
