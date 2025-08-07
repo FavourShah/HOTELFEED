@@ -1,10 +1,10 @@
 // store/usePropertyStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from 'axios';
+import axios from '../utils/axiosInstance';
 
-// Use environment variable or fallback to localhost
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
+
 
 const usePropertyStore = create(
   persist(
@@ -18,7 +18,7 @@ const usePropertyStore = create(
         set({ loading: true, error: null });
         
         try {
-          const response = await axios.get(`${API_BASE_URL}/api/property`, {
+          const response = await axios.get('/api/property', {
             headers: {
               Authorization: `Bearer ${token}`
             }
