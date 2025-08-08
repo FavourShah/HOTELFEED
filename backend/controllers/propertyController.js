@@ -4,59 +4,15 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { cloudinary, storage } from "../config/cloudinary.js";
 
 // Get __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configure multer for file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads/logos/');
-    console.log('📁 Multer destination:', uploadPath);
-    
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-      console.log('✅ Created upload directory:', uploadPath);
-    } else {
-      console.log('✅ Upload directory exists:', uploadPath);
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const filename = 'logo-' + uniqueSuffix + path.extname(file.originalname);
-    console.log('📁 Generated filename:', filename);
-    cb(null, filename);
-  }
-});
+export const upload = multer({ storage }); // from Cloudinary config
 
-const fileFilter = (req, file, cb) => {
-  console.log('📁 File filter check:', {
-    originalname: file.originalname,
-    mimetype: file.mimetype,
-    size: file.size
-  });
-  
-  // Check file type
-  if (file.mimetype.startsWith('image/')) {
-    console.log('✅ File type accepted');
-    cb(null, true);
-  } else {
-    console.log('❌ File type rejected');
-    cb(new Error('Only image files are allowed!'), false);
-  }
-};
-
-export const upload = multer({ 
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  }
-});
 
 export const getProperty = async (req, res) => {
   try {
@@ -155,14 +111,16 @@ export const updateProperty = async (req, res) => {
 
 export const uploadLogo = async (req, res) => {
   try {
-    if (!req.file?.filename) {
-      return res.status(400).json({ message: 'No image uploaded' });
-    }
+   if (!req.file?.path) {
+  return res.status(400).json({ message: 'No image uploaded' });
+}
+
 
     const property = await Property.findOne(); // or based on user
 
     // ✅ Store relative path for frontend
-    property.logoUrl = `/uploads/logos/${req.file.filename}`;
+ property.logoUrl = req.file.path; // ✅ This is the Cloudinary URL
+
     await property.save();
 
     res.status(200).json({ message: 'Logo uploaded', property });
@@ -173,9 +131,13 @@ export const uploadLogo = async (req, res) => {
 };
 
 
+
+
+
 export const deleteLogo = async (req, res) => {
   try {
     console.log('🗑️ Logo deletion started');
+
     const property = await Property.findOne();
     
     if (!property || !property.logoUrl) {
@@ -183,30 +145,39 @@ export const deleteLogo = async (req, res) => {
       return res.status(404).json({ message: "No logo found to delete" });
     }
 
-    console.log('🗑️ Current logo URL:', property.logoUrl);
+    const oldLogoUrl = property.logoUrl;
+    console.log('🗑️ Current logo URL:', oldLogoUrl);
 
-    // Delete file if it's a local upload (contains /uploads/)
-    if (property.logoUrl.includes('/uploads/')) {
+    // 1. 🧼 Attempt to delete from Cloudinary if it's a Cloudinary-hosted image
+    const match = oldLogoUrl.match(/\/hotel\/logos\/([^/.]+)/);
+    if (match) {
+      const publicId = `hotel/logos/${match[1]}`;
       try {
-        const url = new URL(property.logoUrl);
-        const filename = path.basename(url.pathname);
-        const filePath = path.join(__dirname, '../uploads/logos/', filename);
-        
-        console.log('🗑️ Trying to delete file:', filePath);
-        
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log('✅ Logo file deleted successfully');
-        } else {
-          console.log('⚠️ Logo file not found on disk:', filePath);
-        }
-      } catch (deleteErr) {
-        console.error('❌ Error deleting logo file:', deleteErr);
+        await cloudinary.uploader.destroy(publicId);
+        console.log("✅ Cloudinary logo deleted:", publicId);
+      } catch (err) {
+        console.warn("⚠️ Failed to delete from Cloudinary:", err.message);
       }
     }
 
-    // Clear logo URL from database
-    const oldLogoUrl = property.logoUrl;
+    // 2. 🧼 Fallback: Try deleting from local storage (if applicable)
+    if (oldLogoUrl.includes('/uploads/')) {
+      try {
+        const filename = path.basename(new URL(oldLogoUrl, 'http://localhost').pathname);
+        const filePath = path.join(__dirname, '../uploads/logos/', filename);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log('✅ Local logo file deleted:', filePath);
+        } else {
+          console.log('⚠️ Local logo file not found:', filePath);
+        }
+      } catch (deleteErr) {
+        console.error('❌ Error deleting local logo file:', deleteErr);
+      }
+    }
+
+    // 3. 🗑️ Clear logoUrl from DB
     property.logoUrl = '';
     await property.save();
 
@@ -214,9 +185,10 @@ export const deleteLogo = async (req, res) => {
 
     res.json({
       message: "Logo deleted successfully",
-      property: property,
+      property,
       debug: {
         deletedLogoUrl: oldLogoUrl,
+        deletedFromCloudinary: !!match,
         wasLocalFile: oldLogoUrl.includes('/uploads/')
       }
     });
