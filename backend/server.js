@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import './cronJobs/autoCheckoutWorker.js';
+
 
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -15,6 +15,9 @@ import roomRoutes from "./routes/roomRoutes.js";
 import roomTypeRoutes from "./routes/roomTypeRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
+import cronRoutes from "./routes/cronRoutes.js";
+
+
 
 dotenv.config();
 
@@ -58,6 +61,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/room-types", roomTypeRoutes);
 app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
+app.use("/api/cron", cronRoutes);
 
 
 // Start server
