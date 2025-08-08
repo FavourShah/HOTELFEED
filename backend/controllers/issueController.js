@@ -7,10 +7,7 @@ export const createIssue = async (req, res) => {
   try {
     const { title, description, roomNumber, location } = req.body;
 
-    const attachments =
-      req.files?.map(
-        (file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
-      ) || [];
+   const attachments = req.files?.map(file => file.path) || []; // ✅ Cloudinary URLs
 
     const user = req.user;
 
@@ -72,15 +69,37 @@ export const deleteIssue = async (req, res) => {
     const issue = await Issue.findById(req.params.id);
     if (!issue) return res.status(404).json({ message: "Issue not found" });
 
-    issue.attachments.forEach((url) => {
-      const filePath = url.split("/uploads/")[1];
-      const fullPath = path.join(process.cwd(), "uploads", filePath);
-      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
-    });
+    for (const url of issue.attachments || []) {
+      // ✅ Check if it's a Cloudinary URL
+      if (url.includes("res.cloudinary.com")) {
+        // Try to extract the public ID for deletion
+        const match = url.match(/\/hotel\/issues\/([^/.]+)/);
+        if (match) {
+          const publicId = `hotel/issues/${match[1]}`;
+          try {
+            await cloudinary.uploader.destroy(publicId);
+            console.log(`✅ Deleted from Cloudinary: ${publicId}`);
+          } catch (cloudErr) {
+            console.warn(`⚠️ Cloudinary deletion failed: ${publicId}`, cloudErr.message);
+          }
+        } else {
+          console.warn(`⚠️ Could not parse public ID from Cloudinary URL: ${url}`);
+        }
+      } else {
+        // ✅ Fallback for local file deletion
+        const filePath = url.split("/uploads/")[1];
+        const fullPath = path.join(process.cwd(), "uploads", filePath);
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+          console.log(`✅ Deleted local file: ${fullPath}`);
+        }
+      }
+    }
 
     await issue.deleteOne();
-    res.status(200).json({ message: "Issue deleted" });
+    res.status(200).json({ message: "Issue and attachments deleted successfully" });
   } catch (err) {
+    console.error("❌ Issue deletion error:", err);
     res.status(500).json({ message: err.message });
   }
 };

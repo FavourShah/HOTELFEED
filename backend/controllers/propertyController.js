@@ -4,14 +4,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { cloudinary, storage } from "../config/cloudinary.js";
+import { cloudinary, logoStorage } from "../config/cloudinary.js";
 
 // Get __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configure multer for file upload
-export const upload = multer({ storage }); // from Cloudinary config
+export const upload = multer({ storage:logoStorage }); // from Cloudinary config
 
 
 export const getProperty = async (req, res) => {

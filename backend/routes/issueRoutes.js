@@ -17,14 +17,10 @@ import {
 } from "../controllers/issueController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { canAssign } from "../middleware/roleMiddleware.js";
+import { issueStorage } from "../config/cloudinary.js";
 
 const router = express.Router();
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
-const upload = multer({ storage });
-
+const upload = multer({ storage: issueStorage });
 // Existing routes
 router.post("/", protect, upload.array("attachments", 5), createIssue);
 router.get("/", protect, getAllIssues);
