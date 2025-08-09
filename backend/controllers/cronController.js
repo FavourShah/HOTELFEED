@@ -1,3 +1,4 @@
+// controllers/cronController.js
 import { Stay } from "../models/stay.js";
 import { Guest } from "../models/guest.js";
 import { Room } from "../models/room.js";
@@ -5,15 +6,18 @@ import { Room } from "../models/room.js";
 export const autoCheckoutHandler = async (req, res) => {
   try {
     const now = new Date();
-    now.setHours(12, 0, 0, 0);
+    now.setHours(12, 0, 0, 0); // 12:00 PM Africa/Lagos time
+
+    console.log("📅 Checking auto-checkout at:", now.toISOString());
 
     const expiredStays = await Stay.find({
       status: "active",
       checkoutDate: { $lte: now },
     });
 
-    let count = 0;
+    console.log("📋 Due for checkout:", expiredStays.length);
 
+    let count = 0;
     for (const stay of expiredStays) {
       stay.status = "checked_out";
       await stay.save();
@@ -32,9 +36,10 @@ export const autoCheckoutHandler = async (req, res) => {
     }
 
     console.log(`✅ ${count} guests auto checked-out.`);
-    res.status(200).json({ message: `Checked out ${count} guests` });
-  } catch (error) {
-    console.error("❌ Auto-checkout error:", error);
-    res.status(500).json({ message: "Auto checkout failed", error: error.message });
+
+    return res.json({ message: `✅ ${count} guests auto checked-out.` });
+  } catch (err) {
+    console.error("❌ Auto-checkout error:", err);
+    return res.status(500).json({ message: err.message });
   }
 };
