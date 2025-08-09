@@ -1,5 +1,5 @@
 import express from "express";
-import { autoCheckoutHandler } from "../controllers/cronController.js";
+import { autoCheckout } from "../controllers/cronController.js";
 
 
 const router = express.Router();
