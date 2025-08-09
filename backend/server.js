@@ -63,6 +63,15 @@ app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/cron", cronRoutes); // Add cron routes
 
+// Add this simple ping endpoint
+app.get("/api/ping", (req, res) => {
+  console.log("🏓 Keep-alive ping received at:", new Date().toISOString());
+  res.status(200).json({ 
+    status: "alive", 
+    timestamp: new Date().toISOString(),
+    message: "Server is awake"
+  });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
