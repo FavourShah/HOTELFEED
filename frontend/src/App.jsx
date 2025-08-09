@@ -96,7 +96,7 @@ function App() {
         <Route path="department-issues" element={<DepartmentIssues />} />
         <Route path="property-settings" element={<PropertySettings />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      
     </Routes>
   );
 }
