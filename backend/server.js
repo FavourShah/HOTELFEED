@@ -63,22 +63,7 @@ app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/cron", cronRoutes); // Add cron routes
 
-// Add this with your other routes, BEFORE app.listen()
-app.post("/api/cron/auto-checkout", async (req, res) => {
-  console.log("🔥 CRON ENDPOINT HIT - THIS SHOULD APPEAR IN LOGS!");
-  
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Cron endpoint is working!",
-      timestamp: new Date().toISOString(),
-      test: true
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
