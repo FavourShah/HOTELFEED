@@ -8,50 +8,44 @@ import { connectDB } from "../config/db.js";
 
 dotenv.config();
 connectDB();
+cron.schedule("0 12 * * *", async () => {
 
-cron.schedule(
-  "0 12 * * *", // Runs at 12:00 PM daily
-  async () => {
-    try {
-      const now = new Date();
-      now.setHours(12, 0, 0, 0); // Set time to 12:00 PM
+  try {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0); // simulate 12 PM local time
 
-      console.log("📅 Checking auto-checkout at:", now.toISOString());
+    console.log("📅 Checking auto-checkout at:", now.toISOString());
 
-      const expiredStays = await Stay.find({
-        status: "active",
-        checkoutDate: { $lte: now },
-      });
+    const expiredStays = await Stay.find({
+      status: "active",
+      checkoutDate: { $lte: now },
+    });
 
-      console.log("📋 Due for checkout:", expiredStays.length);
+    console.log("📋 Due for checkout:", expiredStays.length);
 
-      let count = 0;
+    let count = 0;
 
-      for (const stay of expiredStays) {
-        stay.status = "checked_out";
-        await stay.save();
+    for (const stay of expiredStays) {
+      stay.status = "checked_out";
+      await stay.save();
 
-        // Update guest user
-        await Guest.updateOne(
-          { _id: stay.userId },
-          { status: "checked_out", password: undefined }
-        );
+      // Update guest user
+      await Guest.updateOne(
+        { _id: stay.userId },
+        { status: "checked_out", password: undefined }
+      );
 
-        // Update room status
-        await Room.updateOne(
-          { roomNumber: stay.roomNumber },
-          { status: "checked_out", stayDays: 0, activatedAt: null }
-        );
+      // Update room status
+      await Room.updateOne(
+        { roomNumber: stay.roomNumber },
+        { status: "checked_out", stayDays: 0, activatedAt: null }
+      );
 
-        count++;
-      }
-
-      console.log(`✅ ${count} guests auto checked-out.`);
-    } catch (err) {
-      console.error("❌ Auto-checkout error:", err);
+      count++;
     }
-  },
-  {
-    timezone: "Africa/Lagos",
+
+    console.log(`✅ ${count} guests auto checked-out.`);
+  } catch (err) {
+    console.error("❌ Auto-checkout error:", err);
   }
-);
+});
