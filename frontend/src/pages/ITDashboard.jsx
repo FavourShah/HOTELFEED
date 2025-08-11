@@ -1,4 +1,4 @@
-// ITDashboard.jsx
+// ITDashboard.jsx - Mobile Responsive Fix
 import {
   Box,
   Flex,
@@ -53,6 +53,11 @@ const ITDashboard = () => {
   const [showUserLinks, setShowUserLinks] = useState(true);
   const [showIssueLinks, setShowIssueLinks] = useState(true);
   const [showSystemLinks, setShowSystemLinks] = useState(true);
+
+  // Responsive values
+  const mainPadding = useBreakpointValue({ base: 2, md: 6 });
+  const cardPadding = useBreakpointValue({ base: 2, md: 4 });
+  const headerPadding = useBreakpointValue({ base: 4, md: 6 });
 
   useEffect(() => {
     if (token) {
@@ -236,7 +241,6 @@ const ITDashboard = () => {
               >
                 Property Settings
               </NavButton>
-              {/* You can add more system settings here in the future */}
             </VStack>
           </Collapse>
         </Box>
@@ -245,15 +249,16 @@ const ITDashboard = () => {
   );
 
   return (
-    <Flex direction="column" minH="100vh" bg="gray.50">
+    <Flex direction="column" minH="100vh" bg="gray.50" w="100%">
       <Flex
         bg="green.700"
         color="white"
-        px={6}
+        px={headerPadding}
         py={4}
         alignItems="center"
         justifyContent="space-between"
         shadow="md"
+        w="100%"
       >
         <Flex align="center" gap={4}>
           {isMobile ? (
@@ -299,7 +304,6 @@ const ITDashboard = () => {
                     maxHeight: "36px"
                   }}
                   onError={(e) => {
-                    // Hide logo if it fails to load
                     e.target.style.display = 'none';
                   }}
                 />
@@ -311,7 +315,11 @@ const ITDashboard = () => {
               {propertyLoading ? (
                 <Skeleton height="24px" width="200px" />
               ) : (
-                <Heading fontSize="xl" color="white" fontWeight="medium">
+                <Heading 
+                  fontSize={{ base: "md", md: "xl" }} 
+                  color="white" 
+                  fontWeight="medium"
+                >
                   {getPropertyName()}
                 </Heading>
               )}
@@ -355,7 +363,7 @@ const ITDashboard = () => {
         </HStack>
       </Flex>
 
-      <Flex flex="1">
+      <Flex flex="1" w="100%">
         {!isMobile && !sidebarCollapsed && (
           <Box
             w="280px"
@@ -380,12 +388,35 @@ const ITDashboard = () => {
           </Drawer>
         )}
 
-        <Box flex="1" p={6} bg="gray.50">
-          <Card>
-            <CardBody>
+        {/* MAIN CONTENT AREA - Fixed for mobile */}
+        <Box 
+          flex="1" 
+          p={mainPadding}
+          bg="gray.50"
+          w="100%"
+          maxW="100%"
+          overflow="hidden"
+        >
+          {isMobile ? (
+            // Mobile: Remove card wrapper for full width
+            <Box
+              bg="white"
+              borderRadius="md"
+              shadow="sm"
+              p={cardPadding}
+              w="100%"
+              maxW="100%"
+            >
               <Outlet />
-            </CardBody>
-          </Card>
+            </Box>
+          ) : (
+            // Desktop: Keep card wrapper
+            <Card w="100%">
+              <CardBody p={cardPadding}>
+                <Outlet />
+              </CardBody>
+            </Card>
+          )}
         </Box>
       </Flex>
     </Flex>
