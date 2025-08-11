@@ -397,26 +397,18 @@ const ITDashboard = () => {
           maxW="100%"
           overflow="hidden"
         >
-          {isMobile ? (
-            // Mobile: Remove card wrapper for full width
-            <Box
-              bg="white"
-              borderRadius="md"
-              shadow="sm"
-              p={cardPadding}
-              w="100%"
-              maxW="100%"
-            >
-              <Outlet />
-            </Box>
-          ) : (
-            // Desktop: Keep card wrapper
-            <Card w="100%">
-              <CardBody p={cardPadding}>
-                <Outlet />
-              </CardBody>
-            </Card>
-          )}
+        {isMobile ? (
+  <Box p={4}>
+    <Outlet />
+  </Box>
+) : (
+  <Card>
+    <CardBody>
+      <Outlet />
+    </CardBody>
+  </Card>
+)}
+
         </Box>
       </Flex>
     </Flex>
