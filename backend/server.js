@@ -4,8 +4,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-
 import { connectDB } from "./config/db.js";
+
+// Route imports
 import authRoutes from "./routes/authRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import issueRoutes from "./routes/issueRoutes.js";
@@ -17,33 +18,36 @@ import propertyRoutes from "./routes/propertyRoutes.js";
 import cronRoutes from "./routes/cronRoutes.js";
 
 dotenv.config();
+connectDB();
 
 const app = express();
 
-// Get __dirname in ES modules
+// __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
 const allowedOrigins = [
   "https://fixlodge.onrender.com",
-  "http://localhost:5173"
+  "http://localhost:5173",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-// Serve static files (like uploaded images)
+// Serve static uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // API Routes
@@ -57,13 +61,12 @@ app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/cron", cronRoutes);
 
-// Keep-alive endpoint
+// Health check
 app.get("/api/ping", (req, res) => {
-  console.log("🏓 Keep-alive ping received at:", new Date().toISOString());
   res.status(200).json({
     status: "alive",
     timestamp: new Date().toISOString(),
-    message: "Server is awake"
+    message: "Server is awake",
   });
 });
 
@@ -78,10 +81,8 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-
 // Start server
 const PORT = process.env.PORT || 5000;
-connectDB();
 app.listen(PORT, () => {
-  console.log(`✅ Server started on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
