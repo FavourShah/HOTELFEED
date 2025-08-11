@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
@@ -17,26 +16,23 @@ import roleRoutes from "./routes/roleRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import cronRoutes from "./routes/cronRoutes.js";
 
-
-
 dotenv.config();
 
 const app = express();
 
-// To get __dirname in ES modules
+// Get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 // Middleware
 const allowedOrigins = [
-  "https://fixlodge.onrender.com", 
+  "https://fixlodge.onrender.com",
   "http://localhost:5173"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -44,15 +40,13 @@ app.use(cors({
   },
   credentials: true
 }));
+
 app.use(express.json());
-
-
-app.use(express.json()); // Parse incoming JSON
 
 // Serve static files (like uploaded images)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/issues", issueRoutes);
@@ -61,33 +55,33 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/room-types", roomTypeRoutes);
 app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
-app.use("/api/cron", cronRoutes); // Add cron routes
+app.use("/api/cron", cronRoutes);
 
-
-
-// Add this simple ping endpoint
+// Keep-alive endpoint
 app.get("/api/ping", (req, res) => {
   console.log("🏓 Keep-alive ping received at:", new Date().toISOString());
-  res.status(200).json({ 
-    status: "alive", 
+  res.status(200).json({
+    status: "alive",
     timestamp: new Date().toISOString(),
     message: "Server is awake"
   });
 });
 
+// Serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  const clientDistPath = path.join(__dirname, "client", "dist");
+  app.use(express.static(clientDistPath));
 
-app.use(express.static(path.join(__dirname, "client", "dist"))); // or "build"
+  // Catch-all for SPA routes
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html")); // or "build"
-});
+
 // Start server
 const PORT = process.env.PORT || 5000;
+connectDB();
 app.listen(PORT, () => {
-
-  connectDB();
-  console.log("Server started at http://localhost:" + PORT);
+  console.log(`✅ Server started on port ${PORT}`);
 });
-
-
-
