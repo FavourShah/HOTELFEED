@@ -63,6 +63,15 @@ app.use("/api/role", roleRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/cron", cronRoutes); // Add cron routes
 
+if (process.env.NODE_ENV === "production") {
+  const frontendPath = path.join(__dirname, "/frontend/dist"); // or build if CRA
+  app.use(express.static(frontendPath));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(frontendPath, "index.html"))
+  );
+}
+
 // Add this simple ping endpoint
 app.get("/api/ping", (req, res) => {
   console.log("🏓 Keep-alive ping received at:", new Date().toISOString());

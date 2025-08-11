@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-      "start:worker": "node cron/autoCheckoutWorker.js"
+    "start:worker": "node cron/autoCheckoutWorker.js"
   },
   "type": "module",
   "keywords": [],
