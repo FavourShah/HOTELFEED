@@ -129,35 +129,42 @@ const PageHeader = ({ staffCount, filteredCount, onAddClick, cardBg, textColor, 
           </Text>
         </VStack>
         
-        <HStack spacing={3}>
-          <Button
-            onClick={onAddClick}
-            leftIcon={<AddIcon />}
-            colorScheme="green"
-            variant="solid"
-            borderRadius="lg"
-            size="md"
-            _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
-          >
-            Add Staff Member
-          </Button>
-          <Button
-            onClick={() => exportToPDF({
-              title: "Staff Report",
-              data: staffList,
-              type: "staff",
-              property: property,
-            })}
-            leftIcon={<DownloadIcon />}
-            colorScheme="green"
-            variant="solid"
-            borderRadius="lg"
-            size="md"
-            _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
-          >
-            Export Staff PDF
-          </Button>
-        </HStack>
+      <Stack
+  direction={["column", "row"]}
+  spacing={3}
+  w="full"
+>
+  <Button
+    w={["full", "auto"]}
+    onClick={onAddClick}
+    leftIcon={<AddIcon />}
+    colorScheme="green"
+    variant="solid"
+    borderRadius="lg"
+    size="md"
+    _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+  >
+    Add Staff Member
+  </Button>
+  <Button
+    w={["full", "auto"]}
+    onClick={() => exportToPDF({
+      title: "Staff Report",
+      data: staffList,
+      type: "staff",
+      property: property,
+    })}
+    leftIcon={<DownloadIcon />}
+    colorScheme="green"
+    variant="solid"
+    borderRadius="lg"
+    size="md"
+    _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+  >
+    Export Staff PDF
+  </Button>
+</Stack>
+
       </Flex>
     </CardBody>
   </Card>
@@ -272,8 +279,9 @@ const StaffTableRow = ({ staff, onEdit, onDelete, borderColor, textColor }) => {
 };
 
 const StaffTable = ({ currentPageStaff, onEdit, onDelete, cardBg, borderColor, textColor }) => (
-  <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
-    <Table variant="simple">
+<Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
+  <Box overflowX="auto">
+    <Table variant="simple" minWidth="800px">
       <Thead bg={useColorModeValue("gray.50", "gray.700")}>
         <Tr>
           <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Staff Member</Th>
@@ -295,16 +303,18 @@ const StaffTable = ({ currentPageStaff, onEdit, onDelete, cardBg, borderColor, t
         ))}
       </Tbody>
     </Table>
-    
-    {currentPageStaff.length === 0 && (
-      <Box py={12} textAlign="center">
-        <Text color="gray.500" fontSize="lg">No staff members found</Text>
-        <Text color="gray.400" fontSize="sm" mt={2}>
-          Click "Add Staff Member" to register your first staff member
-        </Text>
-      </Box>
-    )}
-  </Card>
+  </Box>
+  
+  {currentPageStaff.length === 0 && (
+    <Box py={12} textAlign="center">
+      <Text color="gray.500" fontSize="lg">No staff members found</Text>
+      <Text color="gray.400" fontSize="sm" mt={2}>
+        Click "Add Staff Member" to register your first staff member
+      </Text>
+    </Box>
+  )}
+</Card>
+
 );
 
 const PaginationControls = ({ 
