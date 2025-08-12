@@ -29,6 +29,7 @@ import {
   SimpleGrid,
   IconButton,
   ButtonGroup,
+  Stack
 } from "@chakra-ui/react";
 import { ViewIcon, DownloadIcon, TimeIcon, CalendarIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { saveAs } from "file-saver";
@@ -211,6 +212,8 @@ const DepartmentalIssues = () => {
     Export PDF
   </Button>
 </Stack>
+
+
 
             </Flex>
           </CardBody>
