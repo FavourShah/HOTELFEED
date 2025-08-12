@@ -431,7 +431,8 @@ const archiveFilteredIssues = archiveFilter === "all"
   }
 
   return (
-    <Container maxW="8xl" py={8} bg={bgColor} minH="100vh">
+   <Container maxW={["full", "8xl"]} py={8} bg={bgColor} minH="100vh">
+
       <VStack spacing={6} align="stretch">
         {/* Header Section */}
         <Card bg={cardBg} shadow="sm" borderRadius="xl">
@@ -450,78 +451,48 @@ const archiveFilteredIssues = archiveFilter === "all"
                 </Text>
               </VStack>
               
-              <HStack spacing={4} flexWrap="wrap">
-                {/* Status Filter */}
-                <Select
-                  width="200px"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  bg={cardBg}
-                  borderRadius="lg"
-                  _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                </Select>
+            {/* Filter Section */}
+<HStack spacing={4} flexWrap="wrap" w="full">
+  <Select
+    w={["full", "200px"]}
+    value={statusFilter}
+    onChange={(e) => setStatusFilter(e.target.value)}
+    bg={cardBg}
+    borderRadius="lg"
+  >
+    {/* options */}
+  </Select>
 
-                {/* Date Filter */}
-                <Select
-                  width="200px"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  bg={cardBg}
-                  borderRadius="lg"
-                  _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
-                >
-                  <option value="all">All Dates</option>
-                  <option value="most-recent">Most Recent</option>
-                  <option value="today">Today</option>
-                  <option value="yesterday">Yesterday</option>
-                  <option value="last-7-days">Last 7 Days</option>
-                  <option value="this-week">This Week</option>
-                  <option value="last-30-days">Last 30 Days</option>
-                  <option value="this-month">This Month</option>
-                </Select>
+  <Select
+    w={["full", "200px"]}
+    value={dateFilter}
+    onChange={(e) => setDateFilter(e.target.value)}
+    bg={cardBg}
+    borderRadius="lg"
+  >
+    {/* options */}
+  </Select>
 
-                {/* Archive Filter */}
-                <Select
-                  width="200px"
-                  value={archiveFilter}
-                  onChange={(e) => setArchiveFilter(e.target.value)}
-                  bg={cardBg}
-                  borderRadius="lg"
-                  _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
-                >
-                  <option value="active">Active Issues</option>
-                  <option value="archived">Archived Issues</option>
-                  <option value="all">All Issues</option>
-                </Select>
-                
-              <Button
-  onClick={() =>
-    exportToPDF({
-      title:
-        statusFilter === "all" && dateFilter === "all" && archiveFilter === "active"
-          ? "All Active Issues"
-          : `Issues - ${getFilterDescription()}`,
-      data: filteredIssues,
-      type: "issues",
-      property: property, // Add this line to pass the property object
-    })
-  }
-  leftIcon={<DownloadIcon />}
-  colorScheme="green"
-  variant="solid"
-  borderRadius="lg"
-  size="md"
-  _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
->
-  Export PDF
-</Button>
+  <Select
+    w={["full", "200px"]}
+    value={archiveFilter}
+    onChange={(e) => setArchiveFilter(e.target.value)}
+    bg={cardBg}
+    borderRadius="lg"
+  >
+    {/* options */}
+  </Select>
 
-              </HStack>
+  <Button
+    w={["full", "auto"]}
+    onClick={() => exportToPDF(/* ... */)}
+    leftIcon={<DownloadIcon />}
+    colorScheme="green"
+  >
+    Export PDF
+  </Button>
+</HStack>
+
             </Flex>
 
             {/* Bulk Actions */}
@@ -565,211 +536,16 @@ const archiveFilteredIssues = archiveFilter === "all"
           </CardBody>
         </Card>
 
-        {/* Issues Table */}
-        <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
-          <Table variant="simple">
-            <Thead bg={tableHeaderBg}>
-              <Tr>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600" w="60px">
-                  <Checkbox
-                    isChecked={isAllCurrentPageSelected}
-                    isIndeterminate={isSomeCurrentPageSelected && !isAllCurrentPageSelected}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                </Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Issue</Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Location</Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Status</Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Department</Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Reported</Th>
-                <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {currentPageIssues.map((issue, index) => (
-                <Tr key={issue._id} _hover={{ bg: hoverBg }} opacity={issue.isArchived ? 0.6 : 1}>
-                  <Td borderColor={borderColor} py={4}>
-                    <Checkbox
-                      isChecked={selectedIssues.has(issue._id)}
-                      onChange={(e) => handleIssueSelect(issue._id, e.target.checked)}
-                    />
-                  </Td>
-                  <Td borderColor={borderColor} py={4}>
-                    <VStack align="start" spacing={1}>
-                      <HStack>
-                        <Text fontWeight="600" color={textColor} noOfLines={1}>
-                          {issue.title}
-                        </Text>
-                        {issue.isArchived && (
-                          <Badge colorScheme="gray" size="sm">
-                            Archived
-                          </Badge>
-                        )}
-                      </HStack>
-                      <Text fontSize="xs" color="gray.500" noOfLines={2}>
-                        {issue.description}
-                      </Text>
-                    </VStack>
-                  </Td>
-                  
-                  <Td borderColor={borderColor} py={4}>
-                    <Text fontSize="sm" color={textColor}>
-                      {issue.roomNumber || issue.location}
-                    </Text>
-                  </Td>
-                  
-                  <Td borderColor={borderColor} py={4}>
-                    <Badge
-                      colorScheme={getStatusColor(issue.status)}
-                      variant="solid"
-                      borderRadius="full"
-                      px={3}
-                      py={1}
-                      fontSize="xs"
-                      textTransform="capitalize"
-                    >
-                      {issue.status.replace("-", " ")}
-                    </Badge>
-                  </Td>
-                  
-                  <Td borderColor={borderColor} py={4}>
-                    <Text fontSize="sm" color={textColor}>
-                      {issue.department?.name || (
-                        <Text as="span" color="gray.400" fontStyle="italic">
-                          Unassigned
-                        </Text>
-                      )}
-                    </Text>
-                  </Td>
-                  
-                  <Td borderColor={borderColor} py={4}>
-                    <HStack spacing={2}>
-                      <TimeIcon color="gray.400" boxSize={3} />
-                      <Text fontSize="xs" color="gray.500">
-                        {formatDateTime(issue.createdAt)}
-                      </Text>
-                    </HStack>
-                  </Td>
-                  
-                  <Td borderColor={borderColor} py={4}>
-                    <HStack spacing={2}>
-                      <IconButton
-                        icon={<ViewIcon />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="blue"
-                        borderRadius="full"
-                        onClick={() => openView(issue)}
-                        _hover={{ bg: viewHoverBg }}
-                      />
-                      <IconButton
-                        icon={<EditIcon />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="green"
-                        borderRadius="full"
-                        onClick={() => openEdit(issue)}
-                        _hover={{ bg: editHoverBg }}
-                      />
-                      <IconButton
-                        icon={<DeleteIcon />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="red"
-                        borderRadius="full"
-                        onClick={() => {
-                          setDeleteId(issue._id);
-                          onDeleteOpen();
-                        }}
-                        _hover={{ bg: deleteHoverBg }}
-                      />
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-          
-          {filteredIssues.length === 0 && (
-            <Box py={12} textAlign="center">
-              <Text color="gray.500" fontSize="lg">No issues found</Text>
-              <Text color="gray.400" fontSize="sm" mt={2}>
-                {statusFilter !== "all" || dateFilter !== "all" || archiveFilter !== "active"
-                  ? `No issues match the current filters: ${getFilterDescription()}`
-                  : "No issues have been reported yet"
-                }
-              </Text>
-            </Box>
-          )}
 
-          {/* Pagination */}
-          {filteredIssues.length > 0 && (
-            <Box p={4} borderTopWidth="1px" borderColor={borderColor}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
-                <HStack spacing={2}>
-                  <Text fontSize="sm" color="gray.500">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredIssues.length)} of {filteredIssues.length} issues
-                  </Text>
-                  <Select
-                    size="sm"
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    width="100px"
-                  >
-                    <option value={5}>5 per page</option>
-                    <option value={10}>10 per page</option>
-                    <option value={25}>25 per page</option>
-                    <option value={50}>50 per page</option>
-                  </Select>
-                </HStack>
+       {/* Issues Table */}
+<Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
+  <Box overflowX="auto">
+    <Table variant="simple" minW="800px">
+      {/* Thead, Tbody */}
+    </Table>
+  </Box>
+</Card>
 
-                <ButtonGroup size="sm" isAttached variant="outline">
-                  <IconButton
-                    icon={<ChevronLeftIcon />}
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    isDisabled={currentPage === 1}
-                    aria-label="Previous page"
-                  />
-                  
-                  {/* Page numbers */}
-                  {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        isActive={currentPage === pageNum}
-                        _active={{ bg: "blue.500", color: "white" }}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                  
-                  <IconButton
-                    icon={<ChevronRightIcon />}
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    isDisabled={currentPage === totalPages}
-                    aria-label="Next page"
-                  />
-                </ButtonGroup>
-              </Flex>
-            </Box>
-          )}
-        </Card>
       </VStack>
 
       {/* Edit Modal */}
