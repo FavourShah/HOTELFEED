@@ -450,48 +450,80 @@ const archiveFilteredIssues = archiveFilter === "all"
                 </Text>
               </VStack>
               
-            {/* Filter Section */}
-<HStack spacing={4} flexWrap="wrap" w="full">
+           <HStack spacing={4} flexWrap="wrap" w="full">
   <Select
     w={["full", "200px"]}
     value={statusFilter}
     onChange={(e) => setStatusFilter(e.target.value)}
     bg={cardBg}
     borderRadius="lg"
+     _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
   >
-    {/* options */}
-  </Select>
+                  
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                </Select>
 
-  <Select
+                {/* Date Filter */}
+                <Select
     w={["full", "200px"]}
     value={dateFilter}
     onChange={(e) => setDateFilter(e.target.value)}
     bg={cardBg}
     borderRadius="lg"
+      _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
   >
-    {/* options */}
-  </Select>
+                 
+                  <option value="all">All Dates</option>
+                  <option value="most-recent">Most Recent</option>
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="last-7-days">Last 7 Days</option>
+                  <option value="this-week">This Week</option>
+                  <option value="last-30-days">Last 30 Days</option>
+                  <option value="this-month">This Month</option>
+                </Select>
 
-  <Select
+                {/* Archive Filter */}
+                 <Select
     w={["full", "200px"]}
     value={archiveFilter}
     onChange={(e) => setArchiveFilter(e.target.value)}
     bg={cardBg}
     borderRadius="lg"
+    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
   >
-    {/* options */}
-  </Select>
+                    
+                  <option value="active">Active Issues</option>
+                  <option value="archived">Archived Issues</option>
+                  <option value="all">All Issues</option>
+                </Select>
+                
+              <Button
+  onClick={() =>
+    exportToPDF({
+      title:
+        statusFilter === "all" && dateFilter === "all" && archiveFilter === "active"
+          ? "All Active Issues"
+          : `Issues - ${getFilterDescription()}`,
+      data: filteredIssues,
+      type: "issues",
+      property: property, // Add this line to pass the property object
+    })
+  }
+  leftIcon={<DownloadIcon />}
+  colorScheme="green"
+  variant="solid"
+  borderRadius="lg"
+  size="md"
+  _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+>
+  Export PDF
+</Button>
 
-  <Button
-    w={["full", "auto"]}
-    onClick={() => exportToPDF(/* ... */)}
-    leftIcon={<DownloadIcon />}
-    colorScheme="green"
-  >
-    Export PDF
-  </Button>
-</HStack>
-
+              </HStack>
             </Flex>
 
             {/* Bulk Actions */}
@@ -536,7 +568,7 @@ const archiveFilteredIssues = archiveFilter === "all"
         </Card>
 
         {/* Issues Table */}
-    <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
+       <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
   <Box overflowX="auto">
     <Table variant="simple" minW="800px">
             <Thead bg={tableHeaderBg}>
@@ -742,7 +774,7 @@ const archiveFilteredIssues = archiveFilter === "all"
           )}
         </Box>
         
-        </Card>
+        </Card> 
       </VStack>
 
       {/* Edit Modal */}
