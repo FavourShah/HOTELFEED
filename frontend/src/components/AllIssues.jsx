@@ -532,36 +532,45 @@ const archiveFilteredIssues = archiveFilter === "all"
                 <Text fontWeight="600" color="blue.700">
                   {selectedIssues.size} issue{selectedIssues.size > 1 ? 's' : ''} selected
                 </Text>
-                <HStack spacing={2}>
-                  {archiveFilter === "archived" ? (
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      onClick={handleUnarchiveIssues}
-                      isLoading={archiving}
-                      leftIcon={<Box as={MdArchive} />}
-                    >
-                      Unarchive Selected
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      colorScheme="orange"
-                      onClick={onArchiveConfirmOpen}
-                      isLoading={archiving}
-                      leftIcon={<Box as={MdArchive} />}
-                    >
-                      Archive Selected
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedIssues(new Set())}
-                  >
-                    Clear Selection
-                  </Button>
-                </HStack>
+              <Stack
+  direction={["column", "row"]} // column on mobile, row on larger screens
+  spacing={2}
+  w="full"
+>
+  {archiveFilter === "archived" ? (
+    <Button
+      size="sm"
+      w={["full", "auto"]}
+      colorScheme="green"
+      onClick={handleUnarchiveIssues}
+      isLoading={archiving}
+      leftIcon={<Box as={MdArchive} />}
+    >
+      Unarchive Selected
+    </Button>
+  ) : (
+    <Button
+      size="sm"
+      w={["full", "auto"]}
+      colorScheme="orange"
+      onClick={onArchiveConfirmOpen}
+      isLoading={archiving}
+      leftIcon={<Box as={MdArchive} />}
+    >
+      Archive Selected
+    </Button>
+  )}
+
+  <Button
+    size="sm"
+    w={["full", "auto"]}
+    variant="ghost"
+    onClick={() => setSelectedIssues(new Set())}
+  >
+    Clear Selection
+  </Button>
+</Stack>
+
               </Flex>
             )}
           </CardBody>
