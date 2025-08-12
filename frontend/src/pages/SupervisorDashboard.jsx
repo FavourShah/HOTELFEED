@@ -1,4 +1,4 @@
-// SupervisorDashboard.jsx
+// SupervisorDashboard.jsx - Mobile Responsive Fix with Auto-Close Navigation
 import {
   Box,
   Flex,
@@ -54,6 +54,10 @@ const SupervisorDashboard = () => {
   const [showIssueLinks, setShowIssueLinks] = useState(true);
   const [showSystemLinks, setShowSystemLinks] = useState(true);
 
+  // Responsive values
+  const mainPadding = useBreakpointValue({ base: 2, md: 6 });
+  const cardPadding = useBreakpointValue({ base: 2, md: 4 });
+  const headerPadding = useBreakpointValue({ base: 4, md: 6 });
 
   useEffect(() => {
     if (token) {
@@ -64,6 +68,14 @@ const SupervisorDashboard = () => {
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  // Enhanced navigation handler that closes drawer on mobile
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (isMobile && isOpen) {
+      onClose();
+    }
   };
 
   // Get dynamic property name with fallback
@@ -110,7 +122,7 @@ const SupervisorDashboard = () => {
 
       <VStack spacing={2} align="stretch">
         <NavButton 
-          onClick={() => navigate("/dashboard/supervisor")}
+          onClick={() => handleNavigate("/dashboard/supervisor")}
           isActive={isActiveRoute("/dashboard/supervisor")}
         >
           Dashboard Overview
@@ -131,28 +143,28 @@ const SupervisorDashboard = () => {
           <Collapse in={showUserLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/guests")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/guests")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/guests")}
               >
                 Guest Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/staff")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/staff")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/staff")}
               >
                 Staff Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/role")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/role")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/role")}
               >
                 Role Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/departments")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/departments")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/departments")}
               >
@@ -177,7 +189,7 @@ const SupervisorDashboard = () => {
           <Collapse in={showIssueLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/issues")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/issues")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/issues")}
               >
@@ -188,7 +200,7 @@ const SupervisorDashboard = () => {
         </Box>
 
         <NavButton 
-          onClick={() => navigate("/dashboard/supervisor/rooms")}
+          onClick={() => handleNavigate("/dashboard/supervisor/rooms")}
           isActive={isActiveRoute("/dashboard/supervisor/rooms")}
         >
           Room Settings
@@ -209,7 +221,7 @@ const SupervisorDashboard = () => {
           <Collapse in={showSystemLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/supervisor/property-settings")} 
+                onClick={() => handleNavigate("/dashboard/supervisor/property-settings")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/supervisor/property-settings")}
                 icon={<SettingsIcon boxSize={3} />}
@@ -225,15 +237,16 @@ const SupervisorDashboard = () => {
   );
 
   return (
-    <Flex direction="column" minH="100vh" bg="gray.50">
+    <Flex direction="column" minH="100vh" bg="gray.50" w="100%">
       <Flex
         bg="blue.700"
         color="white"
-        px={6}
+        px={headerPadding}
         py={4}
         alignItems="center"
         justifyContent="space-between"
         shadow="md"
+        w="100%"
       >
         <Flex align="center" gap={4}>
           {isMobile ? (
@@ -279,7 +292,6 @@ const SupervisorDashboard = () => {
                     maxHeight: "36px"
                   }}
                   onError={(e) => {
-                    // Hide logo if it fails to load
                     e.target.style.display = 'none';
                   }}
                 />
@@ -291,7 +303,11 @@ const SupervisorDashboard = () => {
               {propertyLoading ? (
                 <Skeleton height="24px" width="200px" />
               ) : (
-                <Heading fontSize="xl" color="white" fontWeight="medium">
+                <Heading 
+                  fontSize={{ base: "md", md: "xl" }} 
+                  color="white" 
+                  fontWeight="medium"
+                >
                   {getPropertyName()}
                 </Heading>
               )}
@@ -324,7 +340,7 @@ const SupervisorDashboard = () => {
               />
             </MenuButton>
             <MenuList bg="white" color="black" shadow="lg">
-              <MenuItem onClick={() => navigate("/dashboard/supervisor/property-settings")}>
+              <MenuItem onClick={() => handleNavigate("/dashboard/supervisor/property-settings")}>
                 Property Settings
               </MenuItem>
               <MenuItem onClick={handleLogout}>
@@ -335,7 +351,7 @@ const SupervisorDashboard = () => {
         </HStack>
       </Flex>
 
-      <Flex flex="1">
+      <Flex flex="1" w="100%">
         {!isMobile && !sidebarCollapsed && (
           <Box
             w="280px"
@@ -360,12 +376,35 @@ const SupervisorDashboard = () => {
           </Drawer>
         )}
 
-        <Box flex="1" p={6} bg="gray.50">
-          <Card>
-            <CardBody>
+        {/* MAIN CONTENT AREA - Fixed for mobile */}
+        <Box 
+          flex="1" 
+          p={mainPadding}
+          bg="gray.50"
+          w="100%"
+          maxW="100%"
+          overflow="hidden"
+        >
+          {isMobile ? (
+            // Mobile: Remove card wrapper for full width
+            <Box
+              bg="white"
+              borderRadius="md"
+              shadow="sm"
+              p={cardPadding}
+              w="100%"
+              maxW="100%"
+            >
               <Outlet />
-            </CardBody>
-          </Card>
+            </Box>
+          ) : (
+            // Desktop: Keep card wrapper
+            <Card w="100%">
+              <CardBody p={cardPadding}>
+                <Outlet />
+              </CardBody>
+            </Card>
+          )}
         </Box>
       </Flex>
     </Flex>

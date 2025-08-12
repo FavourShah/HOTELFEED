@@ -1,3 +1,4 @@
+// DepartmentDashboard.jsx - Mobile Responsive Fix with Auto-Close Navigation
 import {
   Box,
   Flex,
@@ -35,13 +36,14 @@ import {
   TriangleDownIcon,
   TriangleUpIcon,
 } from "@chakra-ui/icons";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
 import usePropertyStore from "../store/usePropertyStore";
 import React, { useState, useEffect } from "react";
 
 const DepartmentDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout, token } = useAuthStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -50,6 +52,11 @@ const DepartmentDashboard = () => {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showIssueLinks, setShowIssueLinks] = useState(true);
+
+  // Responsive values
+  const mainPadding = useBreakpointValue({ base: 2, md: 6 });
+  const cardPadding = useBreakpointValue({ base: 2, md: 4 });
+  const headerPadding = useBreakpointValue({ base: 4, md: 6 });
 
   useEffect(() => {
     if (token) {
@@ -66,6 +73,14 @@ const DepartmentDashboard = () => {
     navigate("/"); // Redirect to login
   };
 
+  // Enhanced navigation handler that closes drawer on mobile
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (isMobile && isOpen) {
+      onClose();
+    }
+  };
+
   // Get dynamic property name with fallback
   const getPropertyName = () => {
     if (propertyLoading) return "Loading...";
@@ -75,6 +90,11 @@ const DepartmentDashboard = () => {
   // Get property logo with fallback
   const getPropertyLogo = () => {
     return property?.logoUrl || null;
+  };
+
+  // Helper function to check if a route is active
+  const isActiveRoute = (path) => {
+    return location.pathname === path;
   };
 
   const NavButton = ({ children, onClick, isActive, icon, ...props }) => (
@@ -106,11 +126,17 @@ const DepartmentDashboard = () => {
 
       {/* Navigation */}
       <VStack spacing={2} align="stretch">
-        <NavButton onClick={() => navigate("/dashboard/department")}>
+        <NavButton 
+          onClick={() => handleNavigate("/dashboard/department")}
+          isActive={isActiveRoute("/dashboard/department")}
+        >
           Dashboard Overview
         </NavButton>
 
-        <NavButton onClick={() => navigate("/dashboard/department/report-issue")}>
+        <NavButton 
+          onClick={() => handleNavigate("/dashboard/department/report-issue")}
+          isActive={isActiveRoute("/dashboard/department/report-issue")}
+        >
           Report Issue
         </NavButton>
 
@@ -130,21 +156,24 @@ const DepartmentDashboard = () => {
           <Collapse in={showIssueLinks} animateOpacity>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton
-                onClick={() => navigate("/dashboard/department/my-issues")}
+                onClick={() => handleNavigate("/dashboard/department/my-issues")}
                 size="sm"
+                isActive={isActiveRoute("/dashboard/department/my-issues")}
               >
                 My Issues
               </NavButton>
               <NavButton
-                onClick={() => navigate("/dashboard/department/department-issues")}
+                onClick={() => handleNavigate("/dashboard/department/department-issues")}
                 size="sm"
+                isActive={isActiveRoute("/dashboard/department/department-issues")}
               >
                 Department Issues
               </NavButton>
               {canViewAllIssues && (
                 <NavButton
-                  onClick={() => navigate("/dashboard/department/all-issues")}
+                  onClick={() => handleNavigate("/dashboard/department/all-issues")}
                   size="sm"
+                  isActive={isActiveRoute("/dashboard/department/all-issues")}
                 >
                   All Issues
                 </NavButton>
@@ -155,7 +184,10 @@ const DepartmentDashboard = () => {
 
         {/* Guest Management */}
         {canManageGuests && (
-          <NavButton onClick={() => navigate("/dashboard/department/guest-management")}>
+          <NavButton 
+            onClick={() => handleNavigate("/dashboard/department/guest-management")}
+            isActive={isActiveRoute("/dashboard/department/guest-management")}
+          >
             Guest Management
           </NavButton>
         )}
@@ -164,16 +196,17 @@ const DepartmentDashboard = () => {
   );
 
   return (
-    <Flex direction="column" minH="100vh" bg="gray.50">
+    <Flex direction="column" minH="100vh" bg="gray.50" w="100%">
       {/* Enhanced Topbar */}
       <Flex
         bg="green.700"
         color="white"
-        px={6}
+        px={headerPadding}
         py={4}
         alignItems="center"
         justifyContent="space-between"
         shadow="md"
+        w="100%"
       >
         <Flex align="center" gap={4}>
           {isMobile ? (
@@ -219,7 +252,6 @@ const DepartmentDashboard = () => {
                     maxHeight: "36px"
                   }}
                   onError={(e) => {
-                    // Hide logo if it fails to load
                     e.target.style.display = 'none';
                   }}
                 />
@@ -231,7 +263,11 @@ const DepartmentDashboard = () => {
               {propertyLoading ? (
                 <Skeleton height="24px" width="200px" />
               ) : (
-                <Heading fontSize="xl" color="white" fontWeight="medium">
+                <Heading 
+                  fontSize={{ base: "md", md: "xl" }} 
+                  color="white" 
+                  fontWeight="medium"
+                >
                   {getPropertyName()}
                 </Heading>
               )}
@@ -268,7 +304,7 @@ const DepartmentDashboard = () => {
         </HStack>
       </Flex>
 
-      <Flex flex="1">
+      <Flex flex="1" w="100%">
         {/* Enhanced Sidebar for desktop */}
         {!isMobile && !sidebarCollapsed && (
           <Box 
@@ -295,13 +331,35 @@ const DepartmentDashboard = () => {
           </Drawer>
         )}
 
-        {/* Enhanced Main content */}
-        <Box flex="1" p={6} bg="gray.50">
-          <Card>
-            <CardBody>
+        {/* MAIN CONTENT AREA - Fixed for mobile */}
+        <Box 
+          flex="1" 
+          p={mainPadding}
+          bg="gray.50"
+          w="100%"
+          maxW="100%"
+          overflow="hidden"
+        >
+          {isMobile ? (
+            // Mobile: Remove card wrapper for full width
+            <Box
+              bg="white"
+              borderRadius="md"
+              shadow="sm"
+              p={cardPadding}
+              w="100%"
+              maxW="100%"
+            >
               <Outlet />
-            </CardBody>
-          </Card>
+            </Box>
+          ) : (
+            // Desktop: Keep card wrapper
+            <Card w="100%">
+              <CardBody p={cardPadding}>
+                <Outlet />
+              </CardBody>
+            </Card>
+          )}
         </Box>
       </Flex>
     </Flex>

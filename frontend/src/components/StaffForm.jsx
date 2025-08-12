@@ -3,7 +3,8 @@ import {
   Box, Button, Input, Textarea, VStack, useToast, Spinner,
   FormControl, FormLabel, FormHelperText, HStack, Card, CardBody,
   Flex, Stack, useColorModeValue, Text, IconButton, Badge,
-  InputGroup, InputLeftElement, SimpleGrid,
+  InputGroup, InputLeftElement, SimpleGrid, useBreakpointValue,
+  Container, Heading, Alert, AlertIcon
 } from '@chakra-ui/react';
 import { 
   AttachmentIcon, 
@@ -19,7 +20,8 @@ import {
   FaBed,
   FaMapMarkerAlt,
   FaClipboardList,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaInfoCircle
 } from 'react-icons/fa';
 import axios from '../utils/axiosInstance';
 import useAuthStore from '../store/useAuthStore';
@@ -33,10 +35,23 @@ const StaffIssueForm = ({
   const { token, user } = useAuthStore();
   const toast = useToast();
 
+  // Responsive values
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const formSpacing = useBreakpointValue({ base: 4, md: 6 });
+  const cardPadding = useBreakpointValue({ base: 4, md: 8 });
+  const containerPadding = useBreakpointValue({ base: 4, md: 6 });
+  const headingSize = useBreakpointValue({ base: "lg", md: "xl" });
+  const iconSize = useBreakpointValue({ base: 20, md: 24 });
+
   // Color mode values
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const shadowColor = useBreakpointValue({ 
+    base: "md", 
+    md: "lg" 
+  });
 
   const [form, setForm] = useState({
     title: '',
@@ -60,7 +75,9 @@ const StaffIssueForm = ({
       toast({
         title: 'Too many files',
         description: 'Please select up to 5 images only',
-        status: 'warning'
+        status: 'warning',
+        duration: 4000,
+        isClosable: true
       });
       return;
     }
@@ -83,7 +100,9 @@ const StaffIssueForm = ({
       toast({
         title: 'Title required',
         description: 'Please provide a title for the issue',
-        status: 'warning'
+        status: 'warning',
+        duration: 4000,
+        isClosable: true
       });
       return;
     }
@@ -92,7 +111,9 @@ const StaffIssueForm = ({
       toast({
         title: 'Description required',
         description: 'Please describe the issue in detail',
-        status: 'warning'
+        status: 'warning',
+        duration: 4000,
+        isClosable: true
       });
       return;
     }
@@ -102,7 +123,8 @@ const StaffIssueForm = ({
         title: 'Location required',
         description: 'Please specify either a room number or location',
         status: 'warning',
-        duration: 3000,
+        duration: 4000,
+        isClosable: true
       });
     }
 
@@ -126,8 +148,10 @@ const StaffIssueForm = ({
 
       toast({ 
         title: 'Issue reported successfully',
-        description: 'Your Issue has been recorded and will be addressed ',
-        status: 'success' 
+        description: 'Your issue has been recorded and will be addressed',
+        status: 'success',
+        duration: 5000,
+        isClosable: true
       });
       
       setForm({
@@ -144,39 +168,88 @@ const StaffIssueForm = ({
         title: 'Error reporting issue',
         description: err.response?.data?.message || 'Please try again later',
         status: 'error',
+        duration: 5000,
+        isClosable: true
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const FormField = ({ label, icon, children, isRequired = false, helper }) => (
+    <FormControl isRequired={isRequired}>
+      <Flex align="center" mb={3}>
+        <Box color="blue.500" mr={2}>
+          {icon}
+        </Box>
+        <FormLabel 
+          mb={0} 
+          fontWeight="semibold" 
+          color="gray.700"
+          fontSize={{ base: "sm", md: "md" }}
+        >
+          {label}
+        </FormLabel>
+      </Flex>
+      {children}
+      {helper && (
+        <FormHelperText mt={2} fontSize="xs" color="gray.500">
+          {helper}
+        </FormHelperText>
+      )}
+    </FormControl>
+  );
+
   const formContent = (
-    <Stack spacing={6}>
-      {/* Staff Info (if showHeader is true) */}
+    <Stack spacing={formSpacing}>
+      {/* Staff Info Header (Mobile Optimized) */}
       {showHeader && (
-        <Card bg="blue.50" borderRadius="xl" mb={4}>
-          <CardBody p={4}>
-            <Flex align="center" justify="space-between">
-              <Flex align="center">
+        <Card 
+          bg="blue.50" 
+          borderRadius="xl" 
+          mb={4}
+          borderLeft="4px"
+          borderLeftColor="blue.400"
+          shadow={shadowColor}
+        >
+          <CardBody p={{ base: 3, md: 4 }}>
+            <Flex 
+              align="center" 
+              justify="space-between"
+              direction={{ base: "column", sm: "row" }}
+              gap={{ base: 3, sm: 0 }}
+            >
+              <Flex align="center" w={{ base: "100%", sm: "auto" }}>
                 <Box
-                  p={3}
+                  p={{ base: 2, md: 3 }}
                   rounded="full"
                   bg="blue.100"
                   color="blue.600"
-                  mr={4}
+                  mr={{ base: 3, md: 4 }}
+                  flexShrink={0}
                 >
-                  <FaUser size={16} />
+                  <FaUser size={isMobile ? 14 : 16} />
                 </Box>
-                <Box>
-                  <Text fontWeight="bold" color="blue.700">
-                    {user?.name || 'Staff Member'}
+                <Box flex={1}>
+                  <Text 
+                    fontWeight="bold" 
+                    color="blue.700"
+                    fontSize={{ base: "sm", md: "md" }}
+                  >
+                    {user?.name || user?.fullName || 'Staff Member'}
                   </Text>
-                  <Text fontSize="sm" color="blue.600">
+                  <Text fontSize={{ base: "xs", md: "sm" }} color="blue.600">
                     Staff Issue Report
                   </Text>
                 </Box>
               </Flex>
-              <Badge colorScheme="blue" px={3} py={1} borderRadius="full">
+              <Badge 
+                colorScheme="blue" 
+                px={3} 
+                py={1} 
+                borderRadius="full"
+                fontSize={{ base: "xs", md: "sm" }}
+              >
                 Staff Access
               </Badge>
             </Flex>
@@ -184,155 +257,168 @@ const StaffIssueForm = ({
         </Card>
       )}
 
-      <FormControl isRequired>
-        <Flex align="center" mb={3}>
-          <FaClipboardList color="gray" size={16} />
-          <FormLabel ml={2} mb={0} fontWeight="semibold" color="gray.700">
-            Issue Title
-          </FormLabel>
-        </Flex>
+      {/* Title Field */}
+      <FormField
+        label="Issue Title"
+        icon={<FaClipboardList size={isMobile ? 14 : 16} />}
+        isRequired
+      >
         <Input
           name="title"
-          placeholder="e.g., Wi-Fi connectivity issues in lobby"
+          placeholder={isMobile ? "Brief issue title" : "e.g., Wi-Fi connectivity issues in lobby"}
           value={form.title}
           onChange={handleChange}
-          bg="gray.50"
-          border="1px"
+          bg={inputBg}
+          border="2px"
           borderColor={borderColor}
           focusBorderColor="blue.400"
           _hover={{ borderColor: "blue.300" }}
-          size="lg"
+          size={{ base: "md", md: "lg" }}
           borderRadius="lg"
+          fontSize={{ base: "sm", md: "md" }}
         />
-      </FormControl>
+      </FormField>
 
-      <FormControl isRequired>
-        <Flex align="center" mb={3}>
-          <FaExclamationCircle color="gray" size={16} />
-          <FormLabel ml={2} mb={0} fontWeight="semibold" color="gray.700">
-            Detailed Description
-          </FormLabel>
-        </Flex>
+      {/* Description Field */}
+      <FormField
+        label="Detailed Description"
+        icon={<FaExclamationCircle size={isMobile ? 14 : 16} />}
+        isRequired
+        helper="Provide comprehensive details about the issue"
+      >
         <Textarea
           name="description"
-          placeholder="Provide a comprehensive description of the issue, including steps to reproduce, impact on operations, and any temporary workarounds..."
+          placeholder={isMobile 
+            ? "Describe the issue in detail..." 
+            : "Provide a comprehensive description of the issue, including steps to reproduce, impact on operations, and any temporary workarounds..."
+          }
           value={form.description}
           onChange={handleChange}
-          bg="gray.50"
-          border="1px"
+          bg={inputBg}
+          border="2px"
           borderColor={borderColor}
           focusBorderColor="blue.400"
           _hover={{ borderColor: "blue.300" }}
-          rows={5}
+          rows={isMobile ? 4 : 5}
           borderRadius="lg"
           resize="vertical"
+          fontSize={{ base: "sm", md: "md" }}
         />
-      </FormControl>
+      </FormField>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-        <FormControl>
-          <Flex align="center" mb={3}>
-            <FaBed color="gray" size={16} />
-            <FormLabel ml={2} mb={0} fontWeight="semibold" color="gray.700">
-              Room Number
-            </FormLabel>
-          </Flex>
+      {/* Location Fields (Stack on Mobile) */}
+      <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+        <FormField
+          label="Room Number"
+          icon={<FaBed size={isMobile ? 14 : 16} />}
+          helper={isMobile ? "e.g., 101, 205A" : undefined}
+        >
           <Input
             name="roomNumber"
             placeholder="e.g., 101, 205A"
             value={form.roomNumber}
             onChange={handleChange}
-            bg="gray.50"
-            border="1px"
+            bg={inputBg}
+            border="2px"
             borderColor={borderColor}
             focusBorderColor="blue.400"
             _hover={{ borderColor: "blue.300" }}
-            size="lg"
+            size={{ base: "md", md: "lg" }}
             borderRadius="lg"
+            fontSize={{ base: "sm", md: "md" }}
           />
-        </FormControl>
+        </FormField>
 
-        <FormControl>
-          <Flex align="center" mb={3}>
-            <FaMapMarkerAlt color="gray" size={16} />
-            <FormLabel ml={2} mb={0} fontWeight="semibold" color="gray.700">
-              Location/Area
-            </FormLabel>
-          </Flex>
+        <FormField
+          label="Location/Area"
+          icon={<FaMapMarkerAlt size={isMobile ? 14 : 16} />}
+          helper={isMobile ? "e.g., Lobby, Restaurant" : undefined}
+        >
           <Input
             name="location"
-            placeholder="e.g., Lobby, Restaurant, Parking"
+            placeholder="e.g., Lobby, Restaurant"
             value={form.location}
             onChange={handleChange}
-            bg="gray.50"
-            border="1px"
+            bg={inputBg}
+            border="2px"
             borderColor={borderColor}
             focusBorderColor="blue.400"
             _hover={{ borderColor: "blue.300" }}
-            size="lg"
+            size={{ base: "md", md: "lg" }}
             borderRadius="lg"
+            fontSize={{ base: "sm", md: "md" }}
           />
-          <FormHelperText mt={2} fontSize="sm" color="gray.500">
-            <Flex align="center">
-              <WarningIcon mr={2} />
-              Please specify either a room number or location (or both)
-            </Flex>
-          </FormHelperText>
-        </FormControl>
+        </FormField>
       </SimpleGrid>
 
-      <FormControl>
-        <Flex align="center" mb={3}>
-          <FaFileImage color="gray" size={16} />
-          <FormLabel ml={2} mb={0} fontWeight="semibold" color="gray.700">
-            Supporting Images (Optional)
-          </FormLabel>
-        </Flex>
+      {/* Location Requirement Alert */}
+      <Alert status="info" borderRadius="lg" fontSize={{ base: "xs", md: "sm" }}>
+        <AlertIcon boxSize={{ base: 3, md: 4 }} />
+        <Text>Please specify either a room number or location (or both)</Text>
+      </Alert>
+
+      {/* File Upload Field */}
+      <FormField
+        label="Supporting Images"
+        icon={<FaFileImage size={isMobile ? 14 : 16} />}
+        helper="Upload photos for visual context (up to 5 images)"
+      >
         <InputGroup>
           <InputLeftElement pointerEvents="none" pl={2}>
-            <AttachmentIcon color="gray.400" />
+            <AttachmentIcon color="gray.400" boxSize={{ base: 3, md: 4 }} />
           </InputLeftElement>
           <Input
             type="file"
             multiple
             accept="image/*"
             onChange={handleFileChange}
-            bg="gray.50"
-            border="1px"
+            bg={inputBg}
+            border="2px"
             borderColor={borderColor}
             focusBorderColor="blue.400"
             _hover={{ borderColor: "blue.300" }}
             borderRadius="lg"
-            pl={10}
-            pt={2}
+            pl={{ base: 8, md: 10 }}
+            pt={isMobile ? 1.5 : 2}
+            fontSize={{ base: "xs", md: "sm" }}
           />
         </InputGroup>
-        <FormHelperText>
-          Upload photos to provide visual context (up to 5 images)
-        </FormHelperText>
-      </FormControl>
+      </FormField>
 
-      {/* File Preview */}
+      {/* File Preview (Mobile Optimized) */}
       {selectedFiles.length > 0 && (
         <Box>
-          <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={3}>
+          <Text 
+            fontSize="sm" 
+            fontWeight="medium" 
+            color="gray.600" 
+            mb={3}
+          >
             Selected Files ({selectedFiles.length}/5)
           </Text>
-          <Stack spacing={2}>
+          <VStack spacing={2} align="stretch">
             {selectedFiles.map((file, index) => (
               <Flex
                 key={index}
                 align="center"
                 justify="space-between"
                 p={3}
-                bg="gray.50"
+                bg="blue.50"
                 borderRadius="lg"
-                border="1px"
-                borderColor={borderColor}
+                border="2px"
+                borderColor="blue.100"
+                direction={{ base: "column", sm: "row" }}
+                gap={{ base: 2, sm: 0 }}
               >
-                <Flex align="center">
-                  <FaFileImage color="blue" size={16} />
-                  <Text ml={3} fontSize="sm" color="gray.700">
+                <Flex align="center" w={{ base: "100%", sm: "auto" }}>
+                  <FaFileImage color="blue" size={isMobile ? 14 : 16} />
+                  <Text 
+                    ml={3} 
+                    fontSize={{ base: "xs", md: "sm" }} 
+                    color="gray.700"
+                    isTruncated
+                    maxW={{ base: "200px", sm: "300px" }}
+                  >
                     {file.name}
                   </Text>
                   <Badge ml={2} colorScheme="blue" size="sm">
@@ -349,14 +435,15 @@ const StaffIssueForm = ({
                 />
               </Flex>
             ))}
-          </Stack>
+          </VStack>
         </Box>
       )}
 
+      {/* Submit Button (Mobile Optimized) */}
       <Box pt={4}>
         <Button
           colorScheme="blue"
-          size="lg"
+          size={{ base: "md", md: "lg" }}
           onClick={handleSubmit}
           w="full"
           isDisabled={isLoading}
@@ -367,12 +454,17 @@ const StaffIssueForm = ({
             shadow: "xl",
             bg: "blue.600"
           }}
+          _active={{
+            transform: "translateY(0px)",
+            shadow: "md"
+          }}
           transition="all 0.2s"
-          py={6}
-          fontSize="md"
+          py={{ base: 5, md: 6 }}
+          fontSize={{ base: "sm", md: "md" }}
           fontWeight="bold"
+          shadow="md"
         >
-          {isLoading ? 'Submitting Report...' : 'Submit Issue Report'}
+          {isLoading ? 'Submitting...' : (isMobile ? 'Submit Report' : 'Submit Issue Report')}
         </Button>
       </Box>
     </Stack>
@@ -380,52 +472,92 @@ const StaffIssueForm = ({
 
   if (showHeader) {
     return (
-      <Box bg={bgColor} minH="100vh" p={6}>
-        <Box maxW="800px" mx="auto">
-          {/* Header */}
-          <Box mb={8}>
-            <Flex align="center" mb={2}>
-              <FaTools color="blue" size={24} />
-              <Box fontSize="xl" fontWeight="bold" ml={3} color="gray.700">
-                Report an Issue
+      <Box bg={bgColor} minH="100vh" w="100%">
+        <Container maxW="800px" px={containerPadding} py={containerPadding}>
+          {/* Mobile-Optimized Header */}
+          <Box mb={{ base: 6, md: 8 }}>
+            <Flex 
+              align="center" 
+              mb={3}
+              direction={{ base: "column", sm: "row" }}
+              textAlign={{ base: "center", sm: "left" }}
+              gap={{ base: 2, sm: 0 }}
+            >
+              <Box color="blue.500" mr={{ base: 0, sm: 3 }} mb={{ base: 2, sm: 0 }}>
+                <FaTools size={iconSize} />
               </Box>
+              <Heading 
+                size={headingSize}
+                color="gray.700"
+                fontWeight="bold"
+              >
+                Report an Issue
+              </Heading>
             </Flex>
-            <Text color="gray.600" fontSize="md">
-              Log maintenance issues and operational problems for quick resolution
+            <Text 
+              color="gray.600" 
+              fontSize={{ base: "sm", md: "md" }}
+              textAlign={{ base: "center", sm: "left" }}
+            >
+              {isMobile 
+                ? "Log issues for quick resolution"
+                : "Log maintenance issues and operational problems for quick resolution"
+              }
             </Text>
           </Box>
 
           {/* Main Form Card */}
-          <Card bg={cardBg} shadow="lg" borderRadius="xl" border="1px" borderColor={borderColor}>
-            <CardBody p={8}>
+          <Card 
+            bg={cardBg} 
+            shadow={shadowColor} 
+            borderRadius="xl" 
+            border="1px" 
+            borderColor={borderColor}
+          >
+            <CardBody p={cardPadding}>
               {formContent}
             </CardBody>
           </Card>
 
-          {/* Process Info */}
-          <Card bg="green.50" borderRadius="xl" mt={6}>
-            <CardBody p={6}>
+          {/* Process Info (Simplified for Mobile) */}
+          <Card 
+            bg="green.50" 
+            borderRadius="xl" 
+            mt={{ base: 4, md: 6 }}
+            borderLeft="4px"
+            borderLeftColor="green.400"
+          >
+            <CardBody p={{ base: 4, md: 6 }}>
               <Flex align="center" mb={3}>
-                <CheckCircleIcon color="green.500" />
-                <Text ml={2} fontWeight="semibold" color="green.700">
-                  Issue Resolution Process
+                <CheckCircleIcon color="green.500" boxSize={{ base: 4, md: 5 }} />
+                <Text 
+                  ml={2} 
+                  fontWeight="semibold" 
+                  color="green.700"
+                  fontSize={{ base: "sm", md: "md" }}
+                >
+                  Resolution Process
                 </Text>
               </Flex>
-              <Stack spacing={2} fontSize="sm" color="green.600">
-                <Text>• Issues are automatically assigned to appropriate teams</Text>
-                <Text>• High-priority issues receive immediate attention</Text>
-                <Text>• You'll receive updates on the resolution progress</Text>
-                <Text>• All staff reports help improve our service quality</Text>
-              </Stack>
+              <VStack 
+                spacing={1} 
+                fontSize={{ base: "xs", md: "sm" }} 
+                color="green.600"
+                align="start"
+              >
+                <Text>• Automatic team assignment</Text>
+                <Text>• Progress updates provided</Text>
+                <Text>• Quality improvement tracking</Text>
+              </VStack>
             </CardBody>
           </Card>
-        </Box>
+        </Container>
       </Box>
     );
   }
 
   return (
-    <Box p={0}>
+    <Box p={0} w="100%">
       {formContent}
     </Box>
   );
