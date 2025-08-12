@@ -1,4 +1,4 @@
-// ITDashboard.jsx - Mobile Responsive Fix
+// ITDashboard.jsx - Mobile Responsive Fix with Auto-Close Navigation
 import {
   Box,
   Flex,
@@ -70,6 +70,14 @@ const ITDashboard = () => {
     navigate("/");
   };
 
+  // Enhanced navigation handler that closes drawer on mobile
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (isMobile && isOpen) {
+      onClose();
+    }
+  };
+
   // Get dynamic property name with fallback
   const getPropertyName = () => {
     if (propertyLoading) return "Loading...";
@@ -114,7 +122,7 @@ const ITDashboard = () => {
 
       <VStack spacing={2} align="stretch">
         <NavButton 
-          onClick={() => navigate("/dashboard/it")}
+          onClick={() => handleNavigate("/dashboard/it")}
           isActive={isActiveRoute("/dashboard/it")}
         >
           Dashboard Overview
@@ -135,28 +143,28 @@ const ITDashboard = () => {
           <Collapse in={showUserLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/guests")} 
+                onClick={() => handleNavigate("/dashboard/it/guests")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/guests")}
               >
                 Guest Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/staff")} 
+                onClick={() => handleNavigate("/dashboard/it/staff")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/staff")}
               >
                 Staff Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/role")} 
+                onClick={() => handleNavigate("/dashboard/it/role")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/role")}
               >
                 Role Management
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/departments")} 
+                onClick={() => handleNavigate("/dashboard/it/departments")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/departments")}
               >
@@ -181,28 +189,28 @@ const ITDashboard = () => {
           <Collapse in={showIssueLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/issues")} 
+                onClick={() => handleNavigate("/dashboard/it/issues")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/issues")}
               >
                 All Issues
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/report-issue")} 
+                onClick={() => handleNavigate("/dashboard/it/report-issue")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/report-issue")}
               >
                 Report Issue
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/my-issues")} 
+                onClick={() => handleNavigate("/dashboard/it/my-issues")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/my-issues")}
               >
                 My Reported Issues
               </NavButton>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/department-issues")} 
+                onClick={() => handleNavigate("/dashboard/it/department-issues")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/department-issues")}
               >
@@ -213,7 +221,7 @@ const ITDashboard = () => {
         </Box>
 
         <NavButton 
-          onClick={() => navigate("/dashboard/it/rooms")}
+          onClick={() => handleNavigate("/dashboard/it/rooms")}
           isActive={isActiveRoute("/dashboard/it/rooms")}
         >
           Room Settings
@@ -234,7 +242,7 @@ const ITDashboard = () => {
           <Collapse in={showSystemLinks}>
             <VStack pl={4} align="stretch" spacing={1} mt={2}>
               <NavButton 
-                onClick={() => navigate("/dashboard/it/property-settings")} 
+                onClick={() => handleNavigate("/dashboard/it/property-settings")} 
                 size="sm"
                 isActive={isActiveRoute("/dashboard/it/property-settings")}
                 icon={<SettingsIcon boxSize={3} />}
@@ -352,7 +360,7 @@ const ITDashboard = () => {
               />
             </MenuButton>
             <MenuList bg="white" color="black" shadow="lg">
-              <MenuItem onClick={() => navigate("/dashboard/it/property-settings")}>
+              <MenuItem onClick={() => handleNavigate("/dashboard/it/property-settings")}>
                 Property Settings
               </MenuItem>
               <MenuItem onClick={handleLogout}>

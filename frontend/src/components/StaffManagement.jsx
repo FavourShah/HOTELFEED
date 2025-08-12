@@ -462,7 +462,7 @@ const StaffFormModal = ({
                 />
               </FormControl>
               
-              <Flex gap={4}>
+             <Stack direction={["column", "row"]} spacing={4}>
                 <FormControl isRequired>
                   <FormLabel color={textColor} fontWeight="500">Email</FormLabel>
                   <Input 
@@ -485,12 +485,12 @@ const StaffFormModal = ({
                     _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
                   />
                 </FormControl>
-              </Flex>
+              </Stack>
             </FormSection>
             
             {/* Role & Department Section */}
             <FormSection title="Role & Department">
-             <Stack direction={["column", "row"]} spacing={4}>
+              <Flex gap={4}>
                 <FormControl isRequired>
                   <FormLabel color={textColor} fontWeight="500">Role</FormLabel>
                   <Select
@@ -530,7 +530,7 @@ const StaffFormModal = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Stack>
+              </Flex>
             </FormSection>
             
             {/* Security Section */}
