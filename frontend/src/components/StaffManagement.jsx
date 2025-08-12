@@ -490,7 +490,7 @@ const StaffFormModal = ({
             
             {/* Role & Department Section */}
             <FormSection title="Role & Department">
-              <Flex gap={4}>
+             <Stack direction={["column", "row"]} spacing={4}>
                 <FormControl isRequired>
                   <FormLabel color={textColor} fontWeight="500">Role</FormLabel>
                   <Select
@@ -530,7 +530,7 @@ const StaffFormModal = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Flex>
+              </Stack>
             </FormSection>
             
             {/* Security Section */}

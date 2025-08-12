@@ -198,36 +198,38 @@ const RoomTable = ({
   borderColor, 
   textColor 
 }) => (
-  <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
-    <Table variant="simple">
-      <Thead bg={useColorModeValue("gray.50", "gray.700")}>
-        <Tr>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Room Number</Th>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Type</Th>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Status</Th>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Change</Th>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Password</Th>
-          <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Stay Days</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {currentPageRooms.map((room) => (
-          <RoomTableRow 
-            key={room._id}
-            room={room}
-            onSelectChange={onSelectChange}
-            onEditClick={onEditClick}
-            onSaveClick={onSaveClick}
-            editingStayDays={editingStayDays}
-            editedStayDays={editedStayDays}
-            setEditedStayDays={setEditedStayDays}
-            borderColor={borderColor}
-            textColor={textColor}
-          />
-        ))}
-      </Tbody>
-    </Table>
-    
+ <Card bg={cardBg} shadow="sm" borderRadius="xl" overflow="hidden">
+    <Box overflowX="auto">
+      <Table variant="simple" minWidth="800px">
+        <Thead bg={useColorModeValue("gray.50", "gray.700")}>
+          <Tr>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Room Number</Th>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Type</Th>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Status</Th>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Change</Th>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Password</Th>
+            <Th borderColor={borderColor} py={4} fontSize="sm" fontWeight="600">Stay Days</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {currentPageRooms.map((room) => (
+            <RoomTableRow 
+              key={room._id}
+              room={room}
+              onSelectChange={onSelectChange}
+              onEditClick={onEditClick}
+              onSaveClick={onSaveClick}
+              editingStayDays={editingStayDays}
+              editedStayDays={editedStayDays}
+              setEditedStayDays={setEditedStayDays}
+              borderColor={borderColor}
+              textColor={textColor}
+            />
+          ))}
+        </Tbody>
+      </Table>
+    </Box>
+
     {currentPageRooms.length === 0 && (
       <Box py={12} textAlign="center">
         <Text color="gray.500" fontSize="lg">No rooms found</Text>

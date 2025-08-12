@@ -393,28 +393,25 @@ const PropertySettings = () => {
     <Container maxW="4xl" py={8}>
       <VStack spacing={8} align="stretch">
         
-
-        {/* Header */}
-        <Card bg={cardBg} shadow="md" borderRadius="xl">
-          <Box bg="linear-gradient(135deg, #4299E1 0%, #3182CE 100%)" p={6} borderTopRadius="xl">
-            <HStack justify="space-between" align="center" color="white">
-              <HStack spacing={4}>
-                <Box p={3} bg="whiteAlpha.200" borderRadius="lg">
-                  <SettingsIcon boxSize={6} />
-                </Box>
-                <VStack align="start" spacing={1}>
-                  <Heading size="lg" fontWeight="bold">Property Settings</Heading>
-                  <Text opacity={0.9}>
-                    Manage your property information and branding
-                  </Text>
-                </VStack>
-              </HStack>
-              <Badge colorScheme="blue" size="lg" px={3} py={1} borderRadius="full">
-                {user?.role || 'Admin'}
-              </Badge>
-            </HStack>
-          </Box>
-        </Card>
+{/* Header */}
+<Card bg={cardBg} shadow="md" borderRadius="xl">
+  <Box bg="linear-gradient(135deg, #48BB78 0%, #38A169 100%)" p={6} borderTopRadius="xl">
+    <HStack justify="space-between" align="center" color="white">
+      <HStack spacing={4}>
+        <Box p={3} bg="whiteAlpha.200" borderRadius="lg">
+          <SettingsIcon boxSize={6} />
+        </Box>
+        <VStack align="start" spacing={1}>
+          <Heading size="lg" fontWeight="bold">Property Settings</Heading>
+          <Text opacity={0.9}>
+            Manage your property information and branding
+          </Text>
+        </VStack>
+      </HStack>
+      {/* Role badge removed */}
+    </HStack>
+  </Box>
+</Card>
 
         {/* Status Cards */}
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
@@ -456,48 +453,56 @@ const PropertySettings = () => {
           <CardBody>
             <VStack spacing={6} align="stretch">
               {/* Section Header */}
-              <HStack justify="space-between" align="center">
-                <HStack spacing={3}>
-                  <EditIcon color="blue.500" boxSize={5} />
-                  <Text fontWeight="600" color={textColor} fontSize="lg">
-                    Property Information
-                  </Text>
-                </HStack>
-                
-                {!isEditing ? (
-                  <Button
-                    leftIcon={<EditIcon />}
-                    colorScheme="blue"
-                    variant="solid"
-                    onClick={() => setIsEditing(true)}
-                    size="md"
-                  >
-                    Edit Settings
-                  </Button>
-                ) : (
-                  <HStack spacing={3}>
-                    <Button
-                      leftIcon={<CheckIcon />}
-                      colorScheme="green"
-                      onClick={handleSave}
-                      isLoading={saving}
-                      loadingText="Saving..."
-                      size="md"
-                    >
-                      Save Changes
-                    </Button>
-                    <Button
-                      leftIcon={<CloseIcon />}
-                      variant="outline"
-                      onClick={handleCancel}
-                      isDisabled={saving}
-                      size="md"
-                    >
-                      Cancel
-                    </Button>
-                  </HStack>
-                )}
-              </HStack>
+             <HStack justify="space-between" align="center" flexWrap={{ base: "wrap", sm: "nowrap" }}>
+        <HStack spacing={3} mb={{ base: 3, sm: 0 }}>
+          <EditIcon color="green.500" boxSize={5} />
+          <Text fontWeight="600" color={textColor} fontSize="lg">
+            Property Information
+          </Text>
+        </HStack>
+
+        {!isEditing ? (
+          <Button
+            leftIcon={<EditIcon />}
+            colorScheme="green"
+            variant="solid"
+            onClick={() => setIsEditing(true)}
+            size="md"
+            w={{ base: "full", sm: "auto" }}
+          >
+            Edit Settings
+          </Button>
+        ) : (
+          <VStack
+            spacing={3}
+            align={{ base: "stretch", sm: "center" }}
+            w={{ base: "full", sm: "auto" }}
+          >
+            <Button
+              leftIcon={<CheckIcon />}
+              colorScheme="green"
+              onClick={handleSave}
+              isLoading={saving}
+              loadingText="Saving..."
+              size="md"
+              w={{ base: "full", sm: "auto" }}
+            >
+              Save Changes
+            </Button>
+            <Button
+              leftIcon={<CloseIcon />}
+              variant="outline"
+              onClick={handleCancel}
+              isDisabled={saving}
+              size="md"
+              w={{ base: "full", sm: "auto" }}
+            >
+              Cancel
+            </Button>
+          </VStack>
+        )}
+      </HStack>
+
 
               <Divider />
 
