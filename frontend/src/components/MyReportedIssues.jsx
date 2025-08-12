@@ -176,33 +176,39 @@ const MyReportedIssues = () => {
                 </Text>
               </VStack>
               
-              <HStack spacing={4}>
-                <Select
-                  width="200px"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  bg={cardBg}
-                  borderRadius="lg"
-                  _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
-                >
-                  <option value="all">All Issues</option>
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                </Select>
-                
-                <Button
-                  onClick={handleExport}
-                  leftIcon={<DownloadIcon />}
-                  colorScheme="green"
-                  variant="solid"
-                  borderRadius="lg"
-                  size="md"
-                  _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
-                >
-                  Export PDF
-                </Button>
-              </HStack>
+           <Stack
+  direction={["column", "row"]} // Stack on mobile, inline on desktop
+  spacing={4}
+  w="full"
+>
+  <Select
+    w={["full", "200px"]}
+    value={statusFilter}
+    onChange={(e) => setStatusFilter(e.target.value)}
+    bg={cardBg}
+    borderRadius="lg"
+    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
+  >
+    <option value="all">All Issues</option>
+    <option value="pending">Pending</option>
+    <option value="in-progress">In Progress</option>
+    <option value="resolved">Resolved</option>
+  </Select>
+
+  <Button
+    w={["full", "auto"]}
+    onClick={handleExport}
+    leftIcon={<DownloadIcon />}
+    colorScheme="green"
+    variant="solid"
+    borderRadius="lg"
+    size="md"
+    _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+  >
+    Export PDF
+  </Button>
+</Stack>
+
             </Flex>
           </CardBody>
         </Card>
