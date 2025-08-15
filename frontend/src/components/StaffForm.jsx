@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Box, Button, Input, Textarea, VStack, useToast, Spinner,
   FormControl, FormLabel, FormHelperText, HStack, Card, CardBody,
@@ -20,11 +20,36 @@ import {
   FaBed,
   FaMapMarkerAlt,
   FaClipboardList,
-  FaExclamationCircle,
-  FaInfoCircle
+  FaExclamationCircle
 } from 'react-icons/fa';
 import axios from '../utils/axiosInstance';
 import useAuthStore from '../store/useAuthStore';
+import { memo } from 'react';
+
+// Memoized FormField component to prevent unnecessary re-renders
+const FormField = memo(({ label, icon, children, isRequired = false, helper }) => (
+  <FormControl isRequired={isRequired}>
+    <Flex align="center" mb={3}>
+      <Box color="blue.500" mr={2}>
+        {icon}
+      </Box>
+      <FormLabel 
+        mb={0} 
+        fontWeight="semibold" 
+        color="gray.700"
+        fontSize={{ base: "sm", md: "md" }}
+      >
+        {label}
+      </FormLabel>
+    </Flex>
+    {children}
+    {helper && (
+      <FormHelperText mt={2} fontSize="xs" color="gray.500">
+        {helper}
+      </FormHelperText>
+    )}
+  </FormControl>
+));
 
 const StaffIssueForm = ({
   onSuccess = () => {},
@@ -32,7 +57,7 @@ const StaffIssueForm = ({
   defaultLocation = '',
   showHeader = true,
 }) => {
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
   const toast = useToast();
 
   // Responsive values
@@ -60,16 +85,27 @@ const StaffIssueForm = ({
     location: defaultLocation,
     attachments: [],
   });
-
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  // Stable event handlers
+  const handleTitleChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, title: e.target.value }));
+  }, []);
 
-  const handleFileChange = (e) => {
+  const handleDescriptionChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+
+  const handleRoomNumberChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, roomNumber: e.target.value }));
+  }, []);
+
+  const handleLocationChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, location: e.target.value }));
+  }, []);
+
+  const handleFileChange = useCallback((e) => {
     const files = Array.from(e.target.files);
     if (files.length > 5) {
       toast({
@@ -82,20 +118,20 @@ const StaffIssueForm = ({
       return;
     }
     
-    setForm({ ...form, attachments: e.target.files });
+    setForm((prev) => ({ ...prev, attachments: e.target.files }));
     setSelectedFiles(files);
-  };
+  }, [toast]);
 
-  const removeFile = (index) => {
+  const removeFile = useCallback((index) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     
     const dt = new DataTransfer();
     newFiles.forEach(file => dt.items.add(file));
-    setForm({ ...form, attachments: dt.files });
-  };
+    setForm((prev) => ({ ...prev, attachments: dt.files }));
+  }, [selectedFiles]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!form.title.trim()) {
       toast({
         title: 'Title required',
@@ -119,13 +155,14 @@ const StaffIssueForm = ({
     }
 
     if (!form.roomNumber.trim() && !form.location.trim()) {
-      return toast({
+      toast({
         title: 'Location required',
         description: 'Please specify either a room number or location',
         status: 'warning',
         duration: 4000,
         isClosable: true
       });
+      return;
     }
 
     setIsLoading(true);
@@ -141,7 +178,6 @@ const StaffIssueForm = ({
     try {
       await axios.post('/api/issues', data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -174,35 +210,10 @@ const StaffIssueForm = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const FormField = ({ label, icon, children, isRequired = false, helper }) => (
-    <FormControl isRequired={isRequired}>
-      <Flex align="center" mb={3}>
-        <Box color="blue.500" mr={2}>
-          {icon}
-        </Box>
-        <FormLabel 
-          mb={0} 
-          fontWeight="semibold" 
-          color="gray.700"
-          fontSize={{ base: "sm", md: "md" }}
-        >
-          {label}
-        </FormLabel>
-      </Flex>
-      {children}
-      {helper && (
-        <FormHelperText mt={2} fontSize="xs" color="gray.500">
-          {helper}
-        </FormHelperText>
-      )}
-    </FormControl>
-  );
+  }, [form, toast, defaultRoomNumber, defaultLocation, onSuccess]);
 
   const formContent = (
     <Stack spacing={formSpacing}>
-      {/* Staff Info Header (Mobile Optimized) */}
       {showHeader && (
         <Card 
           bg="blue.50" 
@@ -257,7 +268,6 @@ const StaffIssueForm = ({
         </Card>
       )}
 
-      {/* Title Field */}
       <FormField
         label="Issue Title"
         icon={<FaClipboardList size={isMobile ? 14 : 16} />}
@@ -267,7 +277,7 @@ const StaffIssueForm = ({
           name="title"
           placeholder={isMobile ? "Brief issue title" : "e.g., Wi-Fi connectivity issues in lobby"}
           value={form.title}
-          onChange={handleChange}
+          onChange={handleTitleChange}
           bg={inputBg}
           border="2px"
           borderColor={borderColor}
@@ -279,7 +289,6 @@ const StaffIssueForm = ({
         />
       </FormField>
 
-      {/* Description Field */}
       <FormField
         label="Detailed Description"
         icon={<FaExclamationCircle size={isMobile ? 14 : 16} />}
@@ -293,7 +302,7 @@ const StaffIssueForm = ({
             : "Provide a comprehensive description of the issue, including steps to reproduce, impact on operations, and any temporary workarounds..."
           }
           value={form.description}
-          onChange={handleChange}
+          onChange={handleDescriptionChange}
           bg={inputBg}
           border="2px"
           borderColor={borderColor}
@@ -306,7 +315,6 @@ const StaffIssueForm = ({
         />
       </FormField>
 
-      {/* Location Fields (Stack on Mobile) */}
       <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
         <FormField
           label="Room Number"
@@ -317,7 +325,7 @@ const StaffIssueForm = ({
             name="roomNumber"
             placeholder="e.g., 101, 205A"
             value={form.roomNumber}
-            onChange={handleChange}
+            onChange={handleRoomNumberChange}
             bg={inputBg}
             border="2px"
             borderColor={borderColor}
@@ -338,7 +346,7 @@ const StaffIssueForm = ({
             name="location"
             placeholder="e.g., Lobby, Restaurant"
             value={form.location}
-            onChange={handleChange}
+            onChange={handleLocationChange}
             bg={inputBg}
             border="2px"
             borderColor={borderColor}
@@ -351,13 +359,11 @@ const StaffIssueForm = ({
         </FormField>
       </SimpleGrid>
 
-      {/* Location Requirement Alert */}
       <Alert status="info" borderRadius="lg" fontSize={{ base: "xs", md: "sm" }}>
         <AlertIcon boxSize={{ base: 3, md: 4 }} />
         <Text>Please specify either a room number or location (or both)</Text>
       </Alert>
 
-      {/* File Upload Field */}
       <FormField
         label="Supporting Images"
         icon={<FaFileImage size={isMobile ? 14 : 16} />}
@@ -385,7 +391,6 @@ const StaffIssueForm = ({
         </InputGroup>
       </FormField>
 
-      {/* File Preview (Mobile Optimized) */}
       {selectedFiles.length > 0 && (
         <Box>
           <Text 
@@ -439,7 +444,6 @@ const StaffIssueForm = ({
         </Box>
       )}
 
-      {/* Submit Button (Mobile Optimized) */}
       <Box pt={4}>
         <Button
           colorScheme="blue"
@@ -474,7 +478,6 @@ const StaffIssueForm = ({
     return (
       <Box bg={bgColor} minH="100vh" w="100%">
         <Container maxW="800px" px={containerPadding} py={containerPadding}>
-          {/* Mobile-Optimized Header */}
           <Box mb={{ base: 6, md: 8 }}>
             <Flex 
               align="center" 
@@ -506,7 +509,6 @@ const StaffIssueForm = ({
             </Text>
           </Box>
 
-          {/* Main Form Card */}
           <Card 
             bg={cardBg} 
             shadow={shadowColor} 
@@ -519,7 +521,6 @@ const StaffIssueForm = ({
             </CardBody>
           </Card>
 
-          {/* Process Info (Simplified for Mobile) */}
           <Card 
             bg="green.50" 
             borderRadius="xl" 

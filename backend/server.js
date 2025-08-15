@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 
 
 import { connectDB } from "./config/db.js";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import issueRoutes from "./routes/issueRoutes.js";
@@ -16,6 +17,9 @@ import roomTypeRoutes from "./routes/roomTypeRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import cronRoutes from "./routes/cronRoutes.js";
+
+
+
 
 
 
@@ -51,6 +55,7 @@ app.use(express.json()); // Parse incoming JSON
 
 // Serve static files (like uploaded images)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);

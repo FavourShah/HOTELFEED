@@ -71,7 +71,7 @@ const AllIssuesPage = () => {
   const { token, user } = useAuthStore();
   const { property } = usePropertyStore(); // Add this line
   const toast = useToast();
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+ 
 
   // Move ALL useColorModeValue calls to the very top, before any other hooks
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -199,7 +199,7 @@ const AllIssuesPage = () => {
   const fetchIssues = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/issues", config);
+      const res = await axios.get("/api/issues");
       setIssues(res.data);
     } catch {
       toast({ title: "Failed to load issues", status: "error", duration: 3000 });
@@ -209,7 +209,7 @@ const AllIssuesPage = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("/api/departments", config);
+      const res = await axios.get("/api/departments");
       setDepartments(res.data);
     } catch {
       toast({ title: "Failed to load departments", status: "error", duration: 3000 });
@@ -271,11 +271,11 @@ const AllIssuesPage = () => {
         payload.assignedBy = null;
       }
 
-      await axios.put(`/api/issues/${selected._id}/assign`, payload, config);
+      await axios.put(`/api/issues/${selected._id}/assign`, payload);
       toast({ title: "Issue updated successfully!", status: "success", duration: 3000 });
       setEditModalOpen(false);
 
-      const res = await axios.get(`/api/issues/${selected._id}`, config);
+      const res = await axios.get(`/api/issues/${selected._id}`);
       const updated = res.data;
       setIssues((prev) => prev.map((i) => (i._id === updated._id ? updated : i)));
       setSelected(updated);
@@ -293,7 +293,7 @@ const AllIssuesPage = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/issues/${deleteId}`, config);
+      await axios.delete(`/api/issues/${deleteId}`);
       toast({ title: "Issue deleted successfully", status: "info", duration: 3000 });
       fetchIssues();
       onDeleteClose();
@@ -306,7 +306,7 @@ const AllIssuesPage = () => {
     setArchiving(true);
     try {
       const issueIds = Array.from(selectedIssues);
-      await axios.put('/api/issues/bulk-archive', { issueIds }, config);
+      await axios.put('/api/issues/bulk-archive', { issueIds });
       
       toast({ 
         title: `${issueIds.length} issue${issueIds.length > 1 ? 's' : ''} archived successfully`, 
@@ -333,7 +333,7 @@ const AllIssuesPage = () => {
     setArchiving(true);
     try {
       const issueIds = Array.from(selectedIssues);
-      await axios.put('/api/issues/bulk-unarchive', { issueIds }, config);
+      await axios.put('/api/issues/bulk-unarchive', { issueIds });
       
       toast({ 
         title: `${issueIds.length} issue${issueIds.length > 1 ? 's' : ''} unarchived successfully`, 

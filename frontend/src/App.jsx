@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import useAuthStore from "./store/useAuthStore";
+import axios from "./utils/axiosInstance";
 
-import HomePage from './pages/HomePage'; // ✅ Landing page for guest or staff choice
-import LoginPage from './pages/LoginPage'; // ✅ Staff/IT/Supervisor login
-import GuestLoginPage from "./pages/GuestLoginPage"; // ✅ Guest login form
-import GuestReportPage from './pages/GuestReportPage'; // ✅ Guest dashboard after login
-
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import GuestLoginPage from "./pages/GuestLoginPage";
+import GuestReportPage from './pages/GuestReportPage';
 import DepartmentDashboard from './pages/DepartmentDashboard';
 import ITDashboard from './pages/ITDashboard';
 import SupervisorDashboard from './pages/SupervisorDashboard';
@@ -22,21 +24,35 @@ import PropertySettings from "./pages/PropertySettings";
 import StaffIssueForm from './components/StaffForm';
 import MyReportedIssues from './components/MyReportedIssues';
 import DepartmentIssues from './components/DepartmentalIssues';
-
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
+  const login = useAuthStore((state) => state.login);
+
+  // ✅ Check logged-in user from cookie when app loads
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("/api/auth/me", { withCredentials: true });
+        login(res.data); // res.data should be the user object
+      } catch (err) {
+        console.log("No active session");
+      }
+    };
+    checkAuth();
+  }, [login]);
+
   return (
     <Routes>
-      {/* ✅ Landing page */}
+      {/* Landing page */}
       <Route path="/" element={<HomePage />} />
 
-      {/* ✅ Login routes */}
+      {/* Login routes */}
       <Route path="/staff-login" element={<LoginPage />} />
       <Route path="/guest-login" element={<GuestLoginPage />} />
       <Route path="/report" element={<GuestReportPage />} />
 
-      {/* ✅ Department Dashboard */}
+      {/* Department Dashboard */}
       <Route
         path="/dashboard/department"
         element={
@@ -53,7 +69,7 @@ function App() {
         <Route path="guest-management" element={<GuestManagement />} />
       </Route>
 
-      {/* ✅ IT Dashboard */}
+      {/* IT Dashboard */}
       <Route
         path="/dashboard/it"
         element={
@@ -75,7 +91,7 @@ function App() {
         <Route path="property-settings" element={<PropertySettings />} />
       </Route>
 
-      {/* ✅ Supervisor Dashboard */}
+      {/* Supervisor Dashboard */}
       <Route
         path="/dashboard/supervisor"
         element={
@@ -96,7 +112,6 @@ function App() {
         <Route path="department-issues" element={<DepartmentIssues />} />
         <Route path="property-settings" element={<PropertySettings />} />
       </Route>
-      
     </Routes>
   );
 }

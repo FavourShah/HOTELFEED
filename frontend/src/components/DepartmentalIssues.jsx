@@ -29,27 +29,48 @@ import {
   SimpleGrid,
   IconButton,
   ButtonGroup,
-  Stack
+  Stack,
+  Textarea,
+  FormControl,
+  FormLabel,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { ViewIcon, DownloadIcon, TimeIcon, CalendarIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { 
+  ViewIcon, 
+  DownloadIcon, 
+  TimeIcon, 
+  CalendarIcon, 
+  CheckCircleIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon,
+  EditIcon,
+  CheckIcon
+} from "@chakra-ui/icons";
 import { saveAs } from "file-saver";
 import { exportToPDF } from "../utils/exportToPDF";
 import useAuthStore from "../store/useAuthStore";
-import usePropertyStore from "../store/usePropertyStore"; // Add this import
+import usePropertyStore from "../store/usePropertyStore";
 import axios from '../utils/axiosInstance';
 
 const DepartmentalIssues = () => {
-  const { token, user } = useAuthStore();
-  const { property } = usePropertyStore(); // Add this line
+  const { user } = useAuthStore();
+  const { property } = usePropertyStore();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   
+  // Status update states
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const { isOpen: isStatusModalOpen, onOpen: onStatusModalOpen, onClose: onStatusModalClose } = useDisclosure();
+  const [statusUpdateIssue, setStatusUpdateIssue] = useState(null);
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12); // 12 cards per page (4 columns x 3 rows)
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   
   const toast = useToast();
 
@@ -84,29 +105,32 @@ const DepartmentalIssues = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchIssues = async () => {
-      try {
-        const res = await axios.get("/api/issues/assigned-to-dept", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setIssues(res.data);
-      } catch (err) {
-        toast({
-          title: "Error loading issues",
-          description: err.response?.data?.message || err.message,
-          status: "error",
-          duration: 4000,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Status options for dropdown
+  const statusOptions = [
+    { value: "pending", label: "Pending", color: "orange" },
+    { value: "in-progress", label: "In Progress", color: "blue" },
+    { value: "resolved", label: "Resolved", color: "green" }
+  ];
 
+  const fetchIssues = async () => {
+    try {
+      const res = await axios.get("/api/issues/assigned-to-dept");
+      setIssues(res.data || []);
+    } catch (err) {
+      toast({
+        title: "Error loading issues",
+        description: err.response?.data?.message || err.message,
+        status: "error",
+        duration: 4000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchIssues();
-  }, [token, toast]);
+  }, [toast]);
 
   // Reset pagination when filter changes
   useEffect(() => {
@@ -123,13 +147,86 @@ const DepartmentalIssues = () => {
     setModalOpen(false);
   };
 
+  const openStatusModal = (issue) => {
+    setStatusUpdateIssue(issue);
+    setNewStatus(issue.status);
+    setRemarks("");
+    onStatusModalOpen();
+  };
+
+  const closeStatusModal = () => {
+    setStatusUpdateIssue(null);
+    setNewStatus("");
+    setRemarks("");
+    onStatusModalClose();
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!statusUpdateIssue || !newStatus) return;
+    
+    // Validate remarks for resolved status
+    if (newStatus === "resolved" && (!remarks || !remarks.trim())) {
+      toast({
+        title: "Remarks Required",
+        description: "Please provide remarks when resolving an issue",
+        status: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setUpdatingStatus(true);
+    
+    try {
+      const payload = { status: newStatus };
+      if (newStatus === "resolved") {
+        payload.remarks = remarks.trim();
+      }
+
+      const response = await axios.put(
+        `/api/issues/${statusUpdateIssue._id}/status`,
+        payload
+      );
+
+      // Update the issues list with the updated issue
+      setIssues(prevIssues => 
+        prevIssues.map(issue => 
+          issue._id === statusUpdateIssue._id ? response.data : issue
+        )
+      );
+
+      // Update selected issue if it's the same one
+      if (selectedIssue?._id === statusUpdateIssue._id) {
+        setSelectedIssue(response.data);
+      }
+
+      toast({
+        title: "Status Updated",
+        description: `Issue status changed to ${newStatus.replace("-", " ")}`,
+        status: "success",
+        duration: 3000,
+      });
+
+      closeStatusModal();
+    } catch (err) {
+      toast({
+        title: "Error updating status",
+        description: err.response?.data?.message || err.message,
+        status: "error",
+        duration: 4000,
+      });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const downloadImage = (url) => {
     const filename = url.split("/").pop();
     saveAs(url, filename);
   };
 
   // Filter out archived issues and apply status filter
-  const activeIssues = issues.filter(issue => !issue.archived);
+  const activeIssues = Array.isArray(issues) ? issues.filter(issue => !issue.archived) : [];
   const filteredIssues = statusFilter === "all"
     ? activeIssues
     : activeIssues.filter((i) => i.status === statusFilter);
@@ -146,7 +243,7 @@ const DepartmentalIssues = () => {
       title: `Departmental Issues - ${deptName}`,
       data: filteredIssues,
       type: "issues",
-      property: property, // Add this line to pass the property object
+      property: property,
     });
   };
 
@@ -180,41 +277,38 @@ const DepartmentalIssues = () => {
                 </Text>
               </VStack>
               
-            <Stack
-  direction={["column", "row"]} // Column on mobile, row on desktop
-  spacing={4}
-  w="full"
->
-  <Select
-    w={["full", "200px"]}
-    value={statusFilter}
-    onChange={(e) => setStatusFilter(e.target.value)}
-    bg={cardBg}
-    borderRadius="lg"
-    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
-  >
-    <option value="all">All Issues</option>
-    <option value="pending">Pending</option>
-    <option value="in-progress">In Progress</option>
-    <option value="resolved">Resolved</option>
-  </Select>
+              <Stack
+                direction={["column", "row"]}
+                spacing={4}
+                w="full"
+              >
+                <Select
+                  w={["full", "200px"]}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  bg={cardBg}
+                  borderRadius="lg"
+                  _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182CE" }}
+                >
+                  <option value="all">All Issues</option>
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                </Select>
 
-  <Button
-    w={["full", "auto"]}
-    onClick={handleExport}
-    leftIcon={<DownloadIcon />}
-    colorScheme="green"
-    variant="solid"
-    borderRadius="lg"
-    size="md"
-    _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
-  >
-    Export PDF
-  </Button>
-</Stack>
-
-
-
+                <Button
+                  w={["full", "auto"]}
+                  onClick={handleExport}
+                  leftIcon={<DownloadIcon />}
+                  colorScheme="green"
+                  variant="solid"
+                  borderRadius="lg"
+                  size="md"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+                >
+                  Export PDF
+                </Button>
+              </Stack>
             </Flex>
           </CardBody>
         </Card>
@@ -242,8 +336,6 @@ const DepartmentalIssues = () => {
                   borderColor={borderColor}
                   _hover={{ shadow: "md", transform: "translateY(-2px)", bg: hoverBg }}
                   transition="all 0.2s"
-                  cursor="pointer"
-                  onClick={() => openModal(issue)}
                 >
                   <CardBody p={6}>
                     <VStack align="stretch" spacing={4}>
@@ -314,18 +406,34 @@ const DepartmentalIssues = () => {
                             </Text>
                           )}
                         </HStack>
-                        <IconButton
-                          icon={<ViewIcon />}
-                          size="sm"
-                          variant="ghost"
-                          colorScheme="blue"
-                          borderRadius="full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openModal(issue);
-                          }}
-                          _hover={{ bg: "blue.50" }}
-                        />
+                        <HStack spacing={1}>
+                          <IconButton
+                            icon={<EditIcon />}
+                            size="sm"
+                            variant="ghost"
+                            colorScheme="orange"
+                            borderRadius="full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openStatusModal(issue);
+                            }}
+                            _hover={{ bg: "orange.50" }}
+                            title="Update Status"
+                          />
+                          <IconButton
+                            icon={<ViewIcon />}
+                            size="sm"
+                            variant="ghost"
+                            colorScheme="blue"
+                            borderRadius="full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openModal(issue);
+                            }}
+                            _hover={{ bg: "blue.50" }}
+                            title="View Details"
+                          />
+                        </HStack>
                       </HStack>
                     </VStack>
                   </CardBody>
@@ -406,7 +514,85 @@ const DepartmentalIssues = () => {
         )}
       </VStack>
 
-      {/* View Modal */}
+      {/* Status Update Modal */}
+      <Modal isOpen={isStatusModalOpen} onClose={closeStatusModal} size="md">
+        <ModalOverlay backdropFilter="blur(10px)" />
+        <ModalContent borderRadius="xl" mx={4}>
+          <ModalHeader borderBottomWidth="1px" borderColor={borderColor} pb={4}>
+            <HStack>
+              <EditIcon color="orange.500" />
+              <Text>Update Issue Status</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody py={6}>
+            <VStack align="stretch" spacing={4}>
+              <Box>
+                <Text fontWeight="600" color={textColor} mb={2}>Issue</Text>
+                <Text fontSize="sm" color="gray.600">{statusUpdateIssue?.title}</Text>
+              </Box>
+              
+              <FormControl>
+                <FormLabel fontWeight="600" color={textColor}>New Status</FormLabel>
+                <Select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  borderRadius="lg"
+                >
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {newStatus === "resolved" && (
+                <FormControl isRequired>
+                  <FormLabel fontWeight="600" color={textColor}>
+                    Resolution Remarks <Text as="span" color="red.500">*</Text>
+                  </FormLabel>
+                  <Textarea
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="Please provide details about how this issue was resolved..."
+                    borderRadius="lg"
+                    rows={4}
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Remarks are required when marking an issue as resolved
+                  </Text>
+                </FormControl>
+              )}
+            </VStack>
+          </ModalBody>
+          
+          <ModalFooter borderTopWidth="1px" borderColor={borderColor} pt={4}>
+            <HStack spacing={3}>
+              <Button 
+                variant="ghost" 
+                onClick={closeStatusModal}
+                borderRadius="lg"
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={handleStatusUpdate}
+                isLoading={updatingStatus}
+                loadingText="Updating..."
+                leftIcon={<CheckIcon />}
+                borderRadius="lg"
+                isDisabled={newStatus === "resolved" && (!remarks || !remarks.trim())}
+              >
+                Update Status
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* View Details Modal */}
       <Modal isOpen={modalOpen} onClose={closeModal} size="xl" scrollBehavior="inside">
         <ModalOverlay backdropFilter="blur(10px)" />
         <ModalContent borderRadius="xl" mx={4}>
@@ -533,9 +719,23 @@ const DepartmentalIssues = () => {
           </ModalBody>
           
           <ModalFooter borderTopWidth="1px" borderColor={borderColor} pt={4}>
-            <Button onClick={closeModal} colorScheme="blue" borderRadius="lg">
-              Close
-            </Button>
+            <HStack spacing={3}>
+              <Button
+                leftIcon={<EditIcon />}
+                colorScheme="orange"
+                variant="outline"
+                onClick={() => {
+                  closeModal();
+                  openStatusModal(selectedIssue);
+                }}
+                borderRadius="lg"
+              >
+                Update Status
+              </Button>
+              <Button onClick={closeModal} colorScheme="blue" borderRadius="lg">
+                Close
+              </Button>
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -623,7 +623,7 @@ const DeleteConfirmationDialog = ({ isOpen, onClose, onConfirm, cancelRef, borde
 // Main Component
 const StaffManagementPage = () => {
   // All hooks must be called before any conditional returns
-  const { token } = useAuthStore();
+  const { user } = useAuthStore();
   const { property } = usePropertyStore();
   const toast = useToast();
   const cancelRef = React.useRef();
@@ -679,14 +679,14 @@ const StaffManagementPage = () => {
     setCurrentPage(1);
   };
 
-  // Config
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+  // 
+  
 
   // API Functions
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/auth/staff", config);
+      const res = await axios.get("/api/auth/staff" );
       const filtered = res.data.filter((user) => user.role !== "guest");
       setStaffList(filtered);
       setUsedRoles(filtered.map((user) => user.role));
@@ -699,7 +699,7 @@ const StaffManagementPage = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await axios.get("/api/role", config);
+      const res = await axios.get("/api/role");
       setRoles(res.data);
     } catch {
       toast({ title: "Failed to load roles", status: "error", duration: 3000 });
@@ -708,7 +708,7 @@ const StaffManagementPage = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("/api/departments", config);
+      const res = await axios.get("/api/departments" );
       setDepartments(res.data);
     } catch {
       toast({ title: "Failed to load departments", status: "error", duration: 3000 });
@@ -775,10 +775,10 @@ const StaffManagementPage = () => {
     try {
       setSaving(true);
       if (editingId) {
-        await axios.put(`/api/auth/users/${editingId}`, formData, config);
+        await axios.put(`/api/auth/users/${editingId}`, formData, );
         toast({ title: "Staff updated successfully!", status: "success", duration: 3000 });
       } else {
-        await axios.post("/api/auth/register", formData, config);
+        await axios.post("/api/auth/register", formData, );
         toast({ title: "Staff registered successfully!", status: "success", duration: 3000 });
       }
       
@@ -817,7 +817,7 @@ const StaffManagementPage = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/auth/users/${deleteId}`, config);
+      await axios.delete(`/api/auth/users/${deleteId}`);
       toast({ title: "Staff deleted successfully", status: "info", duration: 3000 });
       fetchStaff();
       onDeleteClose();

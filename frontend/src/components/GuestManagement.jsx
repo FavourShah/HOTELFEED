@@ -369,9 +369,8 @@ const GuestManagement = () => {
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+     const res = await axios.get("/api/rooms");
+
       setRooms(res.data);
     } catch (err) {
       toast({ title: "Failed to load rooms", status: "error" });
@@ -412,8 +411,8 @@ const GuestManagement = () => {
 
       const res = await axios.put(
         `/api/rooms/${roomId}`,
-        { status: newStatus, stayDays: newStatus === "active" ? stayDays : undefined },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { status: newStatus, stayDays: newStatus === "active" ? stayDays : undefined }
+        
       );
 
       if (newStatus === "active") {
@@ -451,8 +450,7 @@ const GuestManagement = () => {
     try {
       await axios.put(
         `/api/rooms/${roomId}`,
-        { stayDays: Number(newDays) },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { stayDays: Number(newDays) }
       );
       toast({ title: "Stay days updated", status: "success" });
       setEditingStayDays({ ...editingStayDays, [roomId]: false });

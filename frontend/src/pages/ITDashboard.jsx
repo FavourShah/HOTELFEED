@@ -43,7 +43,7 @@ import usePropertyStore from "../store/usePropertyStore";
 const ITDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, token } = useAuthStore();
+  const { user, logout} = useAuthStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
 
@@ -60,10 +60,10 @@ const ITDashboard = () => {
   const headerPadding = useBreakpointValue({ base: 4, md: 6 });
 
   useEffect(() => {
-    if (token) {
-      fetchProperty(token);
-    }
-  }, [token, fetchProperty]);
+   
+      fetchProperty();
+    
+  }, [fetchProperty]);
 
   const handleLogout = () => {
     logout();

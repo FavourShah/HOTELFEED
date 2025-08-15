@@ -57,7 +57,7 @@ import useAuthStore from '../store/useAuthStore';
 import usePropertyStore from '../store/usePropertyStore';
 
 const PropertySettings = () => {
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
   const { property, loading, fetchProperty, updateProperty, uploadLogo, deleteLogo } = usePropertyStore();
   const toast = useToast();
   const fileInputRef = useRef(null);
@@ -96,13 +96,10 @@ const PropertySettings = () => {
       });
     }
   }, [property]);
-
-  // Fetch property on component mount
+ // Fetch property on component mount
   useEffect(() => {
-    if (token) {
-      fetchProperty(token);
-    }
-  }, [token, fetchProperty]);
+    fetchProperty(); // ✅ No token needed now
+  }, [fetchProperty]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -135,7 +132,7 @@ const PropertySettings = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSave = async () => {
+   const handleSave = async () => {
     if (!validateForm()) {
       toast({
         title: 'Validation Error',
@@ -148,12 +145,12 @@ const PropertySettings = () => {
 
     setSaving(true);
     
-    try {
+     try {
       const updateData = {
         name: formData.name.trim()
       };
       
-      await updateProperty(token, updateData);
+      await updateProperty(updateData); // ✅ Removed token
       
       toast({
         title: 'Success!',
@@ -285,7 +282,7 @@ const PropertySettings = () => {
       const formData = new FormData();
       formData.append('logo', file);
       
-      const result = await uploadLogo(token, formData);
+      const result = await uploadLogo(formData);
       console.log('✅ Upload successful:', result);
       
       toast({
@@ -339,7 +336,7 @@ const PropertySettings = () => {
 
   const handleLogoDelete = async () => {
     try {
-      await deleteLogo(token);
+      await deleteLogo();
       
       toast({
         title: 'Logo Removed',

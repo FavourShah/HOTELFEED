@@ -12,7 +12,7 @@ import { protect, requireIT } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // Get property info (accessible to all authenticated users)
-router.get("/", protect, getProperty);
+router.get("/", getProperty);
 
 // Update property info (IT only)
 router.put("/", protect, requireIT, updateProperty);

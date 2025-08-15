@@ -44,7 +44,7 @@ import React, { useState, useEffect } from "react";
 const DepartmentDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, token } = useAuthStore();
+  const { user, logout} = useAuthStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
 
@@ -59,10 +59,10 @@ const DepartmentDashboard = () => {
   const headerPadding = useBreakpointValue({ base: 4, md: 6 });
 
   useEffect(() => {
-    if (token) {
-      fetchProperty(token);
-    }
-  }, [token, fetchProperty]);
+    
+      fetchProperty();
+    
+  }, [fetchProperty]);
 
   const role = user?.role?.toLowerCase();
   const canViewAllIssues = ['front office manager', 'duty manager', 'general manager'].includes(role);

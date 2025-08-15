@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Button, Input, Textarea, VStack, Heading, useToast,
   FormControl, FormLabel, FormHelperText, Card, CardBody,
   Flex, Stack, useColorModeValue, Text, IconButton,
-  InputGroup, InputLeftElement, Badge, Progress, HStack,
+  InputGroup, InputLeftElement, Badge, HStack,
   Menu, MenuButton, MenuList, MenuItem, Avatar,
   Skeleton, SkeletonText, useBreakpointValue, Container,
-  Alert, AlertIcon, SimpleGrid
+  Alert, AlertIcon
 } from '@chakra-ui/react';
 import { 
   AttachmentIcon, 
@@ -21,19 +21,43 @@ import {
   FaUser,
   FaBed,
   FaClipboardList,
-  FaInfoCircle,
   FaPhone
 } from 'react-icons/fa';
 import axios from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import usePropertyStore from '../store/usePropertyStore';
+import { memo } from 'react';
+
+// Memoized FormField component to prevent unnecessary re-renders
+const FormField = memo(({ label, icon, children, isRequired = false, helper }) => (
+  <FormControl isRequired={isRequired}>
+    <Flex align="center" mb={3}>
+      <Box color="orange.500" mr={2}>
+        {icon}
+      </Box>
+      <FormLabel 
+        mb={0} 
+        fontWeight="semibold" 
+        color="gray.700"
+        fontSize={{ base: "sm", md: "md" }}
+      >
+        {label}
+      </FormLabel>
+    </Flex>
+    {children}
+    {helper && (
+      <FormHelperText mt={2} fontSize={{ base: "xs", md: "sm" }} color="gray.500">
+        {helper}
+      </FormHelperText>
+    )}
+  </FormControl>
+));
 
 function GuestReportPage() {
-  const { token, user, logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const toast = useToast();
-
   const { property, loading: propertyLoading, fetchProperty } = usePropertyStore();
 
   // Responsive values
@@ -60,16 +84,12 @@ function GuestReportPage() {
     roomNumber: '',
     attachments: [],
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
-    // Fetch property data for branding
-    if (token) {
-      fetchProperty(token);
-    }
-  }, [fetchProperty, token]);
+    fetchProperty();
+  }, [fetchProperty]);
 
   useEffect(() => {
     if (user?.roomNumber) {
@@ -77,23 +97,21 @@ function GuestReportPage() {
     }
   }, [user]);
 
-  // Get dynamic property name with fallback
   const getPropertyName = () => {
     if (propertyLoading) return "Loading...";
     return property?.name || "Guest Portal";
   };
 
-  // Get property logo with fallback
   const getPropertyLogo = () => {
     return property?.logoUrl || null;
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/guest-login');
-  };
+  }, [logout, navigate]);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = useCallback((e) => {
     const files = Array.from(e.target.files);
     if (files.length > 5) {
       toast({
@@ -106,20 +124,28 @@ function GuestReportPage() {
       return;
     }
     
-    setForm({ ...form, attachments: e.target.files });
+    setForm((prev) => ({ ...prev, attachments: e.target.files }));
     setSelectedFiles(files);
-  };
+  }, [toast]);
 
-  const removeFile = (index) => {
+  const removeFile = useCallback((index) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     
     const dt = new DataTransfer();
     newFiles.forEach(file => dt.items.add(file));
-    setForm({ ...form, attachments: dt.files });
-  };
+    setForm((prev) => ({ ...prev, attachments: dt.files }));
+  }, [selectedFiles]);
 
-  const handleSubmit = async () => {
+  const handleTitleChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, title: e.target.value }));
+  }, []);
+
+  const handleDescriptionChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     if (!form.title.trim()) {
       toast({
         title: 'Title required',
@@ -155,7 +181,6 @@ function GuestReportPage() {
     try {
       await axios.post('/api/issues', data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -186,35 +211,10 @@ function GuestReportPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const FormField = ({ label, icon, children, isRequired = false, helper }) => (
-    <FormControl isRequired={isRequired}>
-      <Flex align="center" mb={3}>
-        <Box color="orange.500" mr={2}>
-          {icon}
-        </Box>
-        <FormLabel 
-          mb={0} 
-          fontWeight="semibold" 
-          color="gray.700"
-          fontSize={{ base: "sm", md: "md" }}
-        >
-          {label}
-        </FormLabel>
-      </Flex>
-      {children}
-      {helper && (
-        <FormHelperText mt={2} fontSize={{ base: "xs", md: "sm" }} color="gray.500">
-          {helper}
-        </FormHelperText>
-      )}
-    </FormControl>
-  );
+  }, [form, toast, user]);
 
   return (
     <Box bg={bgColor} minH="100vh" w="100%">
-      {/* Mobile-Responsive Header Bar */}
       <Flex
         bg="green.700"
         color="white"
@@ -225,14 +225,12 @@ function GuestReportPage() {
         shadow="md"
         w="100%"
       >
-        {/* Logo + Property Info */}
         <HStack 
           spacing={{ base: 2, md: 3 }} 
           align="center"
           flex={1}
           minW={0}
         >
-          {/* Dynamic Logo Display */}
           {getPropertyLogo() && (
             <Box 
               boxSize={{ base: "32px", md: "40px" }}
@@ -262,7 +260,6 @@ function GuestReportPage() {
           )}
           
           <Box flex={1} minW={0}>
-            {/* Dynamic Property Name */}
             {propertyLoading ? (
               <Skeleton height="20px" width="120px" />
             ) : (
@@ -294,7 +291,6 @@ function GuestReportPage() {
           </Box>
         </HStack>
 
-        {/* User Menu */}
         <HStack spacing={3} flexShrink={0}>
           <Menu>
             <MenuButton>
@@ -314,9 +310,7 @@ function GuestReportPage() {
         </HStack>
       </Flex>
 
-      {/* Main Content */}
       <Container maxW="800px" px={containerPadding} py={containerPadding}>
-        {/* Mobile-Optimized Header */}
         <Box mb={{ base: 6, md: 8 }}>
           <Flex 
             align="center" 
@@ -352,7 +346,6 @@ function GuestReportPage() {
           </Text>
         </Box>
 
-        {/* Guest Info Card (Mobile Optimized) */}
         <Card 
           bg={cardBg} 
           shadow={shadowColor} 
@@ -405,7 +398,6 @@ function GuestReportPage() {
           </CardBody>
         </Card>
 
-        {/* Main Form (Mobile Optimized) */}
         <Card 
           bg={cardBg} 
           shadow={shadowColor} 
@@ -415,7 +407,6 @@ function GuestReportPage() {
         >
           <CardBody p={cardPadding}>
             <Stack spacing={formSpacing}>
-              {/* Title Field */}
               <FormField
                 label="Issue Title"
                 icon={<FaClipboardList size={isMobile ? 14 : 16} />}
@@ -424,7 +415,7 @@ function GuestReportPage() {
                 <Input
                   placeholder={isMobile ? "Brief issue description" : "e.g., Air conditioning not working"}
                   value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  onChange={handleTitleChange}
                   bg={inputBg}
                   border="2px"
                   borderColor={borderColor}
@@ -436,7 +427,6 @@ function GuestReportPage() {
                 />
               </FormField>
 
-              {/* Description Field */}
               <FormField
                 label="Description"
                 icon={<FaClipboardList size={isMobile ? 14 : 16} />}
@@ -449,7 +439,7 @@ function GuestReportPage() {
                     : "Please describe the problem in detail. Include when it started, what you've tried, and any other relevant information..."
                   }
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={handleDescriptionChange}
                   bg={inputBg}
                   border="2px"
                   borderColor={borderColor}
@@ -462,7 +452,6 @@ function GuestReportPage() {
                 />
               </FormField>
 
-              {/* Room Number Field */}
               <FormField
                 label="Room Number"
                 icon={<FaBed size={isMobile ? 14 : 16} />}
@@ -481,7 +470,6 @@ function GuestReportPage() {
                 />
               </FormField>
 
-              {/* File Upload Field */}
               <FormField
                 label="Attach Images"
                 icon={<FaFileImage size={isMobile ? 14 : 16} />}
@@ -509,7 +497,6 @@ function GuestReportPage() {
                 </InputGroup>
               </FormField>
 
-              {/* File Preview (Mobile Optimized) */}
               {selectedFiles.length > 0 && (
                 <Box>
                   <Text 
@@ -563,7 +550,6 @@ function GuestReportPage() {
                 </Box>
               )}
 
-              {/* Submit Button (Mobile Optimized) */}
               <Box pt={4}>
                 <Button
                   colorScheme="orange"
@@ -596,7 +582,6 @@ function GuestReportPage() {
           </CardBody>
         </Card>
 
-        {/* Emergency Alert (Mobile Optimized) */}
         <Alert 
           status="warning" 
           borderRadius="xl" 
@@ -631,7 +616,6 @@ function GuestReportPage() {
           </Button>
         </Alert>
 
-        {/* Help Text (Simplified for Mobile) */}
         <Card 
           bg="blue.50" 
           borderRadius="xl" 

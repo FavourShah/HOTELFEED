@@ -9,6 +9,7 @@ import {
   updateUser,
   deleteUser,
   getAvailableRooms,
+  getCurrentUser
 
 } from "../controllers/authController.js";
 import { protect, requireIT } from "../middleware/authMiddleware.js";
@@ -19,6 +20,7 @@ const router = express.Router();
 router.post("/login", loginUser);                 // staff login
 router.post("/guest-login", loginGuest);          // guest login
 router.get("/rooms", getAvailableRooms);   
+router.get("/me", protect, getCurrentUser);
        // public room list
 
 // Staff Registration & Management (IT only)

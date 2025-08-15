@@ -104,16 +104,27 @@ export const loginUser = async (req, res) => {
   const isMatch = await bcrypt.compare(password, staff.password);
   if (!isMatch) return res.status(401).json({ message: "Invalid credentials." });
 
-  // ✅ Return valid token with real MongoDB ObjectId
+  const token = generateToken(staff._id, staff.role);
+
+  // Set token in HTTP-only cookie
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // send cookie only on https in production
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  // ✅ Return user info (no token in body)
   res.status(200).json({
     _id: staff._id,
     username: staff.username,
     fullName: staff.fullName,
     role: staff.role,
     department: staff.department,
-    token: generateToken(staff._id, staff.role),
   });
 };
+
+
 
 // 🔐 Login Guest
 export const loginGuest = async (req, res) => {
@@ -123,7 +134,7 @@ export const loginGuest = async (req, res) => {
     return res.status(400).json({ message: "Room number and password required." });
   }
 
-const guest = await Guest.findOne({ roomNumber, status: "active" })
+  const guest = await Guest.findOne({ roomNumber, status: "active" });
 
   if (!guest) return res.status(404).json({ message: "Guest not found." });
 
@@ -134,13 +145,23 @@ const guest = await Guest.findOne({ roomNumber, status: "active" })
   const isMatch = await bcrypt.compare(password, guest.password);
   if (!isMatch) return res.status(401).json({ message: "Incorrect password." });
 
+  // ✅ Generate JWT and set in HTTP-only cookie
+  const token = generateToken(guest._id, "guest");
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  // ✅ No token in body
   res.status(200).json({
     _id: guest._id,
     roomNumber: guest.roomNumber,
     role: "guest",
-    token: generateToken(guest._id, "guest"),
   });
 };
+
 
 // GET ALL STAFF
 export const getAllUsers = async (req, res) => {
@@ -246,4 +267,34 @@ export const updateGuest = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+export const getCurrentUser = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  if (req.user.role !== "guest") {
+    const staff = await Staff.findById(req.user._id)
+      .select("-password")
+      .populate("department", "name");
+
+    return res.json({
+      _id: staff._id,
+      username: staff.username,
+      fullName: staff.fullName,
+      role: staff.role,
+      department: staff.department
+    });
+  }
+
+  const guest = await Guest.findById(req.user._id).select("-password");
+  res.json({
+    _id: guest._id,
+    roomNumber: guest.roomNumber,
+    role: "guest"
+  });
+};
+
+
 

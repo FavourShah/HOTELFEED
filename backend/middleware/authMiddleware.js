@@ -3,24 +3,20 @@ import { Staff } from "../models/staff.js";
 import { Guest } from "../models/guest.js";
 
 export const protect = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+  // Read token from HTTP-only cookie
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).json({ message: "Not authenticated" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { userId, role } = decoded;
 
     let user;
-
     if (role === "guest") {
       user = await Guest.findById(userId);
     } else if (role === "supervisor") {
-      // Handle supervisor as a virtual user
       user = {
         _id: userId,
         username: process.env.SUPERVISOR_USERNAME,
@@ -33,11 +29,11 @@ export const protect = async (req, res, next) => {
     }
 
     if (!user) {
-      return res.status(401).json({ message: "User not found for token" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     req.user = user;
-    req.user.role = role; // Attach role to the request
+    req.user.role = role;
     next();
   } catch (err) {
     console.error("Token verification failed:", err.message);

@@ -42,7 +42,7 @@ import {
 } from "@chakra-ui/react";
 import { EditIcon, DeleteIcon, AddIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import axios from '../utils/axiosInstance';
-import useAuthStore from "../store/useAuthStore";
+
 
 // Components
 const LoadingSpinner = ({ textColor }) => (
@@ -282,8 +282,7 @@ const PaginationControls = ({
 
 const RoleManagement = () => {
   const toast = useToast();
-  const { token } = useAuthStore();
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+ 
   const cancelRef = useRef();
 
   // Color mode values
@@ -345,7 +344,7 @@ const RoleManagement = () => {
   const fetchRoles = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/role", config);
+      const res = await axios.get("/api/role",);
       setRoles(res.data);
     } catch {
       toast({ 
@@ -364,7 +363,7 @@ const RoleManagement = () => {
     if (!trimmed) return;
 
     try {
-      const res = await axios.post("/api/role", { name: trimmed }, config);
+      const res = await axios.post("/api/role", { name: trimmed });
       setRoles((prev) => [...prev, res.data]);
       setNewRole("");
       toast({ 
@@ -404,7 +403,7 @@ const RoleManagement = () => {
     if (!trimmed) return;
 
     try {
-      const res = await axios.put(`/api/role/${editingRole._id}`, { name: trimmed }, config);
+      const res = await axios.put(`/api/role/${editingRole._id}`, { name: trimmed });
       setRoles((prev) =>
         prev.map((r) => (r._id === res.data.role._id ? res.data.role : r))
       );
@@ -442,7 +441,7 @@ const RoleManagement = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`/api/role/${deleteTarget._id}`, config);
+      await axios.delete(`/api/role/${deleteTarget._id}`,);
       setRoles((prev) => prev.filter((r) => r._id !== deleteTarget._id));
       toast({ 
         title: "Role deleted successfully", 

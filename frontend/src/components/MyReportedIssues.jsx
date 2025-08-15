@@ -37,7 +37,7 @@ import { saveAs } from "file-saver";
 import { exportToPDF } from "../utils/exportToPDF";
 
 const MyReportedIssues = () => {
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
   const { property } = usePropertyStore(); // Add this line
   const toast = useToast();
 
@@ -86,9 +86,8 @@ const MyReportedIssues = () => {
   useEffect(() => {
     const fetchMyIssues = async () => {
       try {
-        const res = await axios.get("/api/issues/my-reports", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      const res = await axios.get("/api/issues/my-reports");
+
         setIssues(res.data);
       } catch (err) {
         toast({
@@ -103,7 +102,7 @@ const MyReportedIssues = () => {
     };
 
     fetchMyIssues();
-  }, [token, toast]);
+  }, [toast]);
 
   // Reset pagination when filter changes
   useEffect(() => {

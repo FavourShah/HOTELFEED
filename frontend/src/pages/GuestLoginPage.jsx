@@ -24,7 +24,7 @@ import usePropertyStore from "../store/usePropertyStore";
 const GuestLoginPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { login, token } = useAuthStore();
+  const { login} = useAuthStore();
 
   const { property, loading: propertyLoading, fetchProperty } = usePropertyStore();
 
@@ -83,7 +83,7 @@ const GuestLoginPage = () => {
         stayDays: stayDays ? Number(stayDays) : undefined,
       });
 
-      login(res.data, res.data.token);
+      login(res.data);
       navigate("/report");
     } catch (err) {
       console.log("Guest login error:", err);

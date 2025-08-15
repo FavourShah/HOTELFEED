@@ -419,7 +419,7 @@ const DeleteConfirmationDialog = ({ isOpen, onClose, onConfirm, cancelRef, delet
 // Main Component
 const DepartmentManagement = () => {
   // All hooks must be called before any conditional returns
-  const { token } = useAuthStore();
+  const { user } = useAuthStore();
   const toast = useToast();
   const cancelRef = useRef();
 
@@ -456,7 +456,7 @@ const DepartmentManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Config
-  const config = { headers: { Authorization: `Bearer ${token}` } };
+  
 
   // Pagination calculations
   const totalPages = Math.ceil(departments.length / itemsPerPage);
@@ -468,7 +468,7 @@ const DepartmentManagement = () => {
   const fetchDepartments = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/departments", config);
+      const res = await axios.get("/api/departments");
       setDepartments(res.data);
     } catch {
       toast({ 
@@ -515,8 +515,7 @@ const DepartmentManagement = () => {
       if (editingDept) {
         const res = await axios.put(
           `/api/departments/${editingDept._id}`, 
-          { name, description }, 
-          config
+          { name, description }
         );
         setDepartments(departments.map((d) => (d._id === res.data._id ? res.data : d)));
         toast({ 
@@ -525,7 +524,7 @@ const DepartmentManagement = () => {
           duration: 3000 
         });
       } else {
-        const res = await axios.post("/api/departments", { name, description }, config);
+        const res = await axios.post("/api/departments", { name, description });
         setDepartments([...departments, res.data]);
         toast({ 
           title: "Department created successfully!", 
@@ -556,7 +555,7 @@ const DepartmentManagement = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/departments/${deleteDept._id}`, config);
+      await axios.delete(`/api/departments/${deleteDept._id}`);
       setDepartments(departments.filter((d) => d._id !== deleteDept._id));
       toast({ 
         title: "Department deleted successfully", 

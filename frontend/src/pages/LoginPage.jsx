@@ -73,44 +73,49 @@ const LoginPage = () => {
     return property?.logoUrl || null;
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true); // Start loading
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
+  setIsLoading(true);
 
-    const normalizedUsername = username.trim().toLowerCase();
-    const normalizedPassword = password.trim();
+  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedPassword = password.trim();
 
-    if (!normalizedUsername || !normalizedPassword || !role) {
-      setIsLoading(false); // Stop loading on validation error
-      return setError("All fields are required.");
-    }
+  if (!normalizedUsername || !normalizedPassword || !role) {
+    setIsLoading(false);
+    return setError("All fields are required.");
+  }
 
-    try {
-      const res = await axios.post("/api/auth/login", {
+  try {
+    const res = await axios.post(
+      "/api/auth/login",
+      {
         username: normalizedUsername,
         password: normalizedPassword,
         role,
-      });
+      },
+      { withCredentials: true } // ✅ important for cookies
+    );
 
-      login(res.data, res.data.token);
+    // Store only the user, not the token
+    login(res.data); 
 
-      switch (res.data.role) {
-        case "it":
-          navigate("/dashboard/it");
-          break;
-           case "supervisor":
-    navigate("/dashboard/supervisor");
-    break;
-        default:
-          navigate("/dashboard/department");
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed.");
-    } finally {
-      setIsLoading(false); // Stop loading
+    switch (res.data.role) {
+      case "it":
+        navigate("/dashboard/it");
+        break;
+      case "supervisor":
+        navigate("/dashboard/supervisor");
+        break;
+      default:
+        navigate("/dashboard/department");
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.message || "Login failed.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <Box
